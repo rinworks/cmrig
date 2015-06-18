@@ -1,0 +1,2 @@
+"eiffel.jpg" retrieved from https://commons.wikimedia.org/wiki/File:Tour_Eiffel_Wikimedia_Commons.jpg
+"fossil.jpg" retrieved from https://commons.wikimedia.org/wiki/File:Coleia_gigantea_(VAN_STRAELEN,_1923)_La_Voulte.jpg
