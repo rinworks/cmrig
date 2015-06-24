@@ -1,11 +1,16 @@
-class L1SimRig implements Rig {
+/**
+ * A level-1 simulator of the rig system.
+ *
+ * @author Sarang Joshi
+ */
+public class L1SimRig implements Rig {
   static final int DEFAULT_CAM_SIZE = 20;
   static final int MARGIN = 10;
   static final int FPS = 60;
   static final int DEFAULT_TICKS = 30;
   
   // The zone in which the Rig can operate
-  int zoneX, zoneY, zoneWidth, zoneHeight;
+  float zoneX, zoneY, zoneWidth, zoneHeight;
   
   // Rig state
   float x, y;
@@ -23,7 +28,7 @@ class L1SimRig implements Rig {
   PImage img;
   Light[] lights;
   
-  public L1SimRig(int boundsX, int boundsY, float x, float y, float picSize, String name) {
+  public L1SimRig(float boundsX, float boundsY, float x, float y, float picSize, String name) {
     this.zoneX = MARGIN;
     this.zoneY = MARGIN;
     this.zoneWidth = boundsX - 2*MARGIN;
@@ -45,11 +50,12 @@ class L1SimRig implements Rig {
   }
   
   //// GETTERS ////
-  float getX(){return x;} float getY(){return y;} float getPicSize(){return picSize;}
-  int getZoneWidth(){return zoneWidth;} int getZoneHeight(){return zoneHeight;}
+  public float getPicSize(){return picSize;}
+  public float getZoneWidth(){return zoneWidth;}
+  public float getZoneHeight(){return zoneHeight;}
   
   //// LIGHTS ////
-  void setupLights() {
+  public void setupLights() {
     lights = new Light[4];
     lights[0] = new Light(Light.SIZE/2, Light.SIZE/2, "NW");
     lights[1] = new Light(zoneWidth+MARGIN+Light.SIZE/2, Light.SIZE/2, "NE");
@@ -57,13 +63,13 @@ class L1SimRig implements Rig {
     lights[3] = new Light(Light.SIZE/2, zoneHeight+MARGIN+Light.SIZE/2, "SW");
   }
   
-  void on(String id) {
+  public void on(String id) {
     for(Light l : lights)
       if(l.id.equals(id))
         l.on();
   }
   
-  void off(String id) {
+  public void off(String id) {
     for(Light l : lights)
       if(l.id.equals(id))
         l.off();
@@ -71,17 +77,17 @@ class L1SimRig implements Rig {
   
   //// OPERATIONS ////
   // Coarse movement
-  void change(float dX, float dY) {
+  public void change(float dX, float dY) {
     x+=dX;
     y+=dY;
   }
   
-  boolean isInZone() {
+  public boolean isInZone() {
     return !(x < zoneX || y < zoneY || x+size > zoneX+zoneWidth || y+size > zoneY+zoneHeight); 
   }
   
   // Picture-taking
-  PImage takePicture() {
+  public PImage takePicture() {
     int cropW = round(picSize / imgScaleX);
     int cropH = round(picSize / imgScaleY);
     int cropX = round((x - MARGIN - picSize/2) / imgScaleX);
@@ -91,20 +97,23 @@ class L1SimRig implements Rig {
   }
   
   //// SETUP ////
-  void addMove(float x, float y) {
-    steps.add(new Move(x, y, this));
+  /**
+   * Offset by MARGIN
+   */
+  public void addMove(float x, float y) {
+    steps.add(new Move(x + MARGIN, y + MARGIN, this));
   }
-  void addTakePicture() {
+  public void addTakePicture() {
     steps.add(new Picture(FPS, picN, this));
     picN++;
   }
-  void addLightSwitch(String id, boolean isOn) {
+  public void addLightSwitch(String id, boolean isOn) {
     steps.add(new LightSwitch(id, isOn, FPS, this));
   }
   
   //// TICK-BASED OPERATIONS ////
   // Goes through the compiled moves sequentially
-  void go() {
+  public void go() {
     if(!steps.isEmpty()) {
       curr = steps.remove();
       pastSteps.add(curr);
@@ -115,7 +124,7 @@ class L1SimRig implements Rig {
   }
   
   // One tick
-  void tick() {
+  public void tick() {
     if(!paused) {
       try {
         if(curr.isFinished()) {
@@ -135,7 +144,7 @@ class L1SimRig implements Rig {
   }
   
   //// DRAWING, OUTPUT ////
-  void draw() {
+  public void draw() {
     drawImage();
     drawZone();
     drawPaths();
@@ -146,11 +155,11 @@ class L1SimRig implements Rig {
     tick();
   }
   
-  void drawImage() {
+  public void drawImage() {
     image(img, MARGIN, MARGIN, zoneWidth, zoneHeight);
   }
   
-  void drawZone() {
+  public void drawZone() {
     noFill();
     rectMode(CORNER);
     stroke(0);
@@ -158,7 +167,7 @@ class L1SimRig implements Rig {
   }
   
   // Draws actual rig camera
-  void drawCam() {
+  public void drawCam() {
     stroke(0);
     fill(#000000);
     rectMode(CENTER);
@@ -167,13 +176,13 @@ class L1SimRig implements Rig {
     //if(debug){fill(255);text(round(x)+", "+round(y),x,y);}
   }
   
-  void drawPaths() {
+  public void drawPaths() {
     for(Step s : pastSteps) {
       s.draw();
     }
   }
   
-  void drawLights() {
+  public void drawLights() {
     for(Light l : lights) {
       l.draw();
     }

@@ -6,11 +6,11 @@ class MovePath {
     addPoint(sx, sy);
   }
   
-  void addPoint(float x, float y) {
+  public void addPoint(float x, float y) {
     points.add(new PVector(x, y));
   }
   
-  void draw() {
+  public void draw() {
     stroke(255);
     for(int i = 0; i < points.size() - 1; i++) {
       line(points.get(i).x, points.get(i).y,
@@ -27,7 +27,7 @@ class PicturePath {
     this.y = y;
   }
   
-  void draw() {
+  public void draw() {
     stroke(255, 0, 0);
     fill(255, 0, 0);
     ellipse(x, y, 16, 16);
@@ -57,7 +57,7 @@ class Move implements Step {
     rig = r;
   }
   
-  void init() {
+  public void init() {
     float dX = endX - rig.x;
     float dY = endY - rig.y;
     float d = sqrt(dX * dX + dY * dY);
@@ -72,23 +72,23 @@ class Move implements Step {
     path = new MovePath(rig.x, rig.y);
   }
   
-  void tick() {
+  public void tick() {
     rig.change(tickX, tickY);
     path.addPoint(rig.x, rig.y);
   }
   
-  void finish() {
+  public void finish() {
   }
   
-  boolean isFinished() {
+  public boolean isFinished() {
     return dist(rig.x, rig.y, endX, endY) <= buffer;
   }
   
-  String finishMessage() {
+  public String finishMessage() {
     return "Moved to " + (endX) + ", " + (endY) + ".";
   }
   
-  void draw() {
+  public void draw() {
     if(path != null)
       path.draw();
   }
@@ -107,7 +107,7 @@ class Picture implements Step {
     this.rig = r;
   }
   
-  void init() {
+  public void init() {
     tick = 0;
     path = new PicturePath(rig.x, rig.y);
     
@@ -115,22 +115,22 @@ class Picture implements Step {
     cropImage.save("output/picCrop" + picN + ".jpg");
   }
   
-  void tick() {
+  public void tick() {
     tick++;
   }
   
-  void finish() {
+  public void finish() {
   }
   
-  boolean isFinished() {
+  public boolean isFinished() {
     return tick == nOfTicks;
   }
   
-  String finishMessage() {
+  public String finishMessage() {
     return "Picture taken.";
   }
   
-  void draw() {
+  public void draw() {
     if(path != null)
       path.draw();
   }
