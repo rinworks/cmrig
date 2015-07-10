@@ -4,41 +4,53 @@
  * @author Sarang Joshi
  */
 public class RigSys {
-  public static final int L1SIM     = 0;
-  public static final int PRINTCORE = 1;
+  public static final int L1SIM     = 0; // L1 Simulator, within Processing
+  public static final int PRINTCORE = 1; // Calls the Printcore process
+  public static final int SERIAL = 2; // Serial output, works with camera and lights
+  public static final int GCODE = 3; // Pure GCode spitter
 
-  public RigSys() {
-    
-  }
-  
+  private float boundsX, boundsY;
+  private float picSize;
+
   // initX and initY are relative to the bounds
-  public Rig openRig(int type, float boundsX, float boundsY, float initX, float initY, float picSize) {
+  public Rig openRig(PApplet app, int type, float boundsX, float boundsY, float initX, float initY, float picSize) {
+    this.boundsX = boundsX;
+    this.boundsY = boundsY;
+    this.picSize = picSize;
+    
     switch(type) {
+      case GCODE:
+        return new GCodeRig(app, "output");
+      case SERIAL:
+        return new SerialRig(app, "COM3", "MICROSCOPE", 640, 480);
       case PRINTCORE:
-        return new PrintcoreRig(boundsX, boundsY, picSize, "supercalifragilistictest.g"); 
+        return new PrintcoreRig("supercalifragilistictest.g");
       case L1SIM:
       default:
         return new L1SimRig(boundsX, boundsY, initX, initY, picSize, "fossil.jpg"); 
     }
   }
   
-  public RigUtils getUtils() {
-    return new RigUtils();
+  public RigUtils utils() {
+    return new RigUtils(boundsX, boundsY, picSize);
   }
 }
 
+/**
+ * Interface for all varieties of the CM Rig.
+ *
+ * @author Sarang Joshi
+ */
 public interface Rig {
   // Default
   void draw();
-  // Ticking
+  // Go
   void go();
-  void tick();
-  // Steps
+  // Step Setup
   void addMove(float x, float y);
   void addTakePicture();
   void addLightSwitch(String id, boolean isOn);
-  // Getters
-  float getZoneWidth();
-  float getZoneHeight();
-  float getPicSize();
+}
+
+public class GCodeHelper {
 }

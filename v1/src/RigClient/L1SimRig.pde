@@ -49,6 +49,99 @@ public class L1SimRig implements Rig {
     setupLights();
   }
   
+  //// DRAWING, OUTPUT ////
+  public void draw() {
+    drawImage();
+    drawZone();
+    drawPaths();
+    drawCam();
+    drawLights();
+    
+    // non-drawing
+    tick();
+  }
+  
+  public void drawImage() {
+    image(img, MARGIN, MARGIN, zoneWidth, zoneHeight);
+  }
+  
+  public void drawZone() {
+    noFill();
+    rectMode(CORNER);
+    stroke(0);
+    rect(zoneX, zoneY, zoneWidth, zoneHeight);
+  }
+  
+  // Draws actual rig camera
+  public void drawCam() {
+    stroke(0);
+    fill(#000000);
+    rectMode(CENTER);
+    rect(x, y, size, size);
+    
+    //if(debug){fill(255);text(round(x)+", "+round(y),x,y);}
+  }
+  
+  public void drawPaths() {
+    for(Step s : pastSteps) {
+      s.draw();
+    }
+  }
+  
+  public void drawLights() {
+    for(Light l : lights) {
+      l.draw();
+    }
+  }
+  
+  //// TICK-BASED OPERATIONS ////
+  // Goes through the compiled moves sequentially
+  public void go() {
+    if(!steps.isEmpty()) {
+      curr = steps.remove();
+      pastSteps.add(curr);
+      curr.init();
+      paused = false;
+      if(debug)println("Go!");
+    }
+  }
+  
+  // One tick
+  public void tick() {
+    if(!paused) {
+      try {
+        if(curr.isFinished()) {
+          curr.finish();
+          if(debug)println(curr.finishMessage());
+          curr = steps.remove();
+          pastSteps.add(curr);
+          curr.init();
+        } else {
+          curr.tick();
+        }
+      } catch (NoSuchElementException e) {
+        if(debug)println("Done.");
+        paused = true;
+      }
+    }
+  }
+  
+  //// SETUP ////
+  /**
+   * Offset by MARGIN
+   */
+  public void addMove(float x, float y) {
+    steps.add(new Move(x + MARGIN, y + MARGIN, this));
+  }
+  
+  public void addTakePicture() {
+    steps.add(new Picture(FPS, picN, this));
+    picN++;
+  }
+  public void addLightSwitch(String id, boolean isOn) {
+    steps.add(new LightSwitch(id, isOn, FPS, this));
+  }
+  
   //// GETTERS ////
   public float getPicSize(){return picSize;}
   public float getZoneWidth(){return zoneWidth;}
@@ -94,98 +187,6 @@ public class L1SimRig implements Rig {
     int cropY = round((y - MARGIN - picSize/2) / imgScaleY);
     
     return img.get(cropX, cropY, cropW, cropH);
-  }
-  
-  //// SETUP ////
-  /**
-   * Offset by MARGIN
-   */
-  public void addMove(float x, float y) {
-    steps.add(new Move(x + MARGIN, y + MARGIN, this));
-  }
-  public void addTakePicture() {
-    steps.add(new Picture(FPS, picN, this));
-    picN++;
-  }
-  public void addLightSwitch(String id, boolean isOn) {
-    steps.add(new LightSwitch(id, isOn, FPS, this));
-  }
-  
-  //// TICK-BASED OPERATIONS ////
-  // Goes through the compiled moves sequentially
-  public void go() {
-    if(!steps.isEmpty()) {
-      curr = steps.remove();
-      pastSteps.add(curr);
-      curr.init();
-      paused = false;
-      if(debug)println("Go!");
-    }
-  }
-  
-  // One tick
-  public void tick() {
-    if(!paused) {
-      try {
-        if(curr.isFinished()) {
-          curr.finish();
-          if(debug)println(curr.finishMessage());
-          curr = steps.remove();
-          pastSteps.add(curr);
-          curr.init();
-        } else {
-          curr.tick();
-        }
-      } catch (NoSuchElementException e) {
-        if(debug)println("Done.");
-        paused = true;
-      }
-    }
-  }
-  
-  //// DRAWING, OUTPUT ////
-  public void draw() {
-    drawImage();
-    drawZone();
-    drawPaths();
-    drawCam();
-    drawLights();
-    
-    // non-drawing
-    tick();
-  }
-  
-  public void drawImage() {
-    image(img, MARGIN, MARGIN, zoneWidth, zoneHeight);
-  }
-  
-  public void drawZone() {
-    noFill();
-    rectMode(CORNER);
-    stroke(0);
-    rect(zoneX, zoneY, zoneWidth, zoneHeight);
-  }
-  
-  // Draws actual rig camera
-  public void drawCam() {
-    stroke(0);
-    fill(#000000);
-    rectMode(CENTER);
-    rect(x, y, size, size);
-    
-    //if(debug){fill(255);text(round(x)+", "+round(y),x,y);}
-  }
-  
-  public void drawPaths() {
-    for(Step s : pastSteps) {
-      s.draw();
-    }
-  }
-  
-  public void drawLights() {
-    for(Light l : lights) {
-      l.draw();
-    }
   }
 }
 

@@ -5,15 +5,9 @@ class PrintcoreRig implements Rig {
   String outputName;
   List<String> instructions;
   
-  float zoneWidth, zoneHeight;
-  float picSize;
-  
   boolean absMove;
   
-  public PrintcoreRig(float zoneWidth, float zoneHeight, float picSize, String outputName) {
-    this.zoneWidth = zoneWidth;
-    this.zoneHeight = zoneHeight;
-    this.picSize = picSize;
+  public PrintcoreRig(String outputName) {
     this.outputName = outputName;
     instructions = new ArrayList<String>();
     instructions.add("G28 X Y");
@@ -33,9 +27,15 @@ class PrintcoreRig implements Rig {
   // Ticking
   void go() {
     println("Go!");
+    
+    // G code file saving
     saveStrings(outputName, instructions.toArray(new String[instructions.size()]));
     if(debug)println("File saved.");
     
+    // G code testing
+    
+    
+    // Printcore execution
     try {
       p = new ProcessBuilder("python",
         "-s",
@@ -79,8 +79,4 @@ class PrintcoreRig implements Rig {
   }
   void addLightSwitch(String id, boolean isOn) {}
   
-  // Getters
-  float getZoneWidth() {return zoneWidth;}
-  float getZoneHeight() {return zoneHeight;}
-  float getPicSize() {return picSize;}
 }
