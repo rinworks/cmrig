@@ -1,46 +1,104 @@
 import jssc.*;
+import java.util.*;
 
-public interface SerialStep {
-  void go();
+/**
+ * Abstract class that represents a single step in the Rig's set of instructions.
+ *
+ * @author Sarang Joshi
+ */
+public abstract class SerialStep {
+  protected StepFinishedListener l;
+  
+  public SerialStep(StepFinishedListener l) {
+    this.l = l;
+  }
+  
+  public abstract void go();
 }
 
-public class SerialInit implements SerialStep, SerialPortEventListener {
-  SerialStepFinishedListener l;
-  SerialPort port;
+public class SerialGCodeStep extends SerialStep implements SerialPortEventListener {
+  protected SerialPort port;
+  protected String[] code;
+  protected int lineN;
   
-  public static final String INIT_GCODE = "G28 X Y\n";
+  public SerialGCodeStep(StepFinishedListener l, SerialPort port) {
+    this(l, port, "");
+  }
   
-  public SerialInit(SerialStepFinishedListener l, SerialPort port) {
-    this.l = l;
-    this.port = port; 
+  public SerialGCodeStep(StepFinishedListener l, SerialPort port, String codeString) {
+    super(l);
+    this.port = port;
+    this.lineN = 0;
+    
+    setGCode(codeString);
+  }
+  
+  /**
+   * Saves the given g codes.
+   *
+   * @param codeString a string containing g codes separated by \\n line breaks
+   */
+  public void setGCode(String codeString) {
+    this.code = GCodeHelper.parseGCode(codeString, "\n");
+  }
+  
+  private void sendGCode() throws SerialPortException {
+    if(debug)println("Line number: " + lineN);
+    port.writeString(code[lineN]);
+    if(debug)print("SENT: " + code[lineN]);
   }
   
   public void go() {
-    try {
-      port.writeString(INIT_GCODE);
-      port.addEventListener(this);
-      if(debug)println("init event listener added");
-      if(debug)print("SENT: " + INIT_GCODE);
-    } catch (SerialPortException e) {
-      e.printStackTrace();
-    }
+    if(code.length > 0)
+      try {
+        port.addEventListener(this);
+        if(debug)println("gcode event listener added");
+        sendGCode();
+      } catch (SerialPortException e) {
+        e.printStackTrace();
+      }
+    else
+      l.stepFinished();
   }
   
+  /**
+   * Message received from printer.
+   *
+   * @param event the serial port event information
+   */
   public void serialEvent(SerialPortEvent event) {
     if(event.isRXCHAR()) {
       try {
         String in = port.readString();
         if(debug)print("RECD: " + in);
-        if(in.contains(SerialRig.OK)) {
-          port.removeEventListener();
-          if(debug)println("init event listener removed");
-          if(debug)println("init finished -> listener called");
-          l.stepFinished();
+        if(in.contains(SerialRig.OK)) { // line completed
+          lineN++;
+          if(lineN >= code.length) { // all the code finished
+            port.removeEventListener();
+            if(debug)println("g code event listener removed");
+            if(debug)println("g code finished -> listener called");
+            l.stepFinished();
+          } else {
+            sendGCode();
+          }
+        } else {
+          // TODO: HANDLE OTHER CASES
+          l.stepFinished(); // abort
         }
       } catch (SerialPortException e) {
         e.printStackTrace();
       }
     }
+  }
+  
+  public String toString() {
+    return Arrays.toString(code);
+  }
+}
+
+public class SerialInit extends SerialGCodeStep {
+  public SerialInit(StepFinishedListener l, SerialPort port) {
+    super(l, port, GCodeHelper.GO_TO_HOME); 
   }
   
   public String toString() {
@@ -48,82 +106,42 @@ public class SerialInit implements SerialStep, SerialPortEventListener {
   }
 }
 
-public class SerialMove implements SerialStep, SerialPortEventListener {
-  SerialStepFinishedListener l;
-  SerialPort port;
-  float x, y;
-  int nOks = 0;
+public class SerialMove extends SerialGCodeStep {
+  private float x, y;
   
-  public static final String WAIT_FOR_FINISH = "G4 P0\n";
-  public static final String MOVE_CODE = "G0";
-  
-  public SerialMove(SerialStepFinishedListener l, SerialPort port, float x, float y) {
-    this.l = l;
-    this.port = port;
+  public SerialMove(StepFinishedListener l, SerialPort port, float x, float y) {
+    super(l, port, "");
     this.x = x;
     this.y = y;
+    
+    setGCode(GCodeHelper.getMoveGCode(x, y)
+      + GCodeHelper.WAIT_FOR_FINISH
+      + GCodeHelper.getWaitGCode(SerialRig.WAIT_MILLIS));
   }
-  
-  private String getGCode() {
-    String xS = String.format("%.2f", x);
-    String yS = String.format("%.2f", y);
-    return MOVE_CODE + " X" + xS + " Y" + yS + "\n";
-  }
-  
-  public void go() {
-    try {
-      port.addEventListener(this);
-      if(debug)println("move event listener added");
-      sendGCode(getGCode());
-    } catch (SerialPortException e) {
-      e.printStackTrace();
-    }
-  }
-  
-  private void sendGCode(String code) throws SerialPortException {
-    port.writeString(code);
-    if(debug)print("SENT: " + code);
-  }
-  
-  public void serialEvent(SerialPortEvent event) {
-    if(event.isRXCHAR()) {
-      try {
-        String in = port.readString();
-        if(debug)print("RECD: " + in);
-        if(in.contains(SerialRig.OK)) {
-          nOks++;
-        }
-        println(nOks + " ok's");
-        if(nOks == 1) {
-          sendGCode(WAIT_FOR_FINISH);
-        } else if(nOks == 2) { // 1 for G0 move command received and 1 for G4 wait command finished
-          port.removeEventListener();
-          if(debug)println("move event listener removed");
-          if(debug)println("move finished -> listener called");
-          l.stepFinished();
-        }
-      } catch (SerialPortException e) {
-        e.printStackTrace();
-      }
-    }
-  }
-  
+    
   public String toString() {
-      return "MOVE TO X:" + x + ", Y:" + y;
+    return "MOVE TO X:" + x + ", Y:" + y;
   }
 }
 
-public class SerialPicture implements SerialStep  {
-  SerialStepFinishedListener l;
+
+public class SerialPicture extends SerialStep  {
   int picN;
+  Capture video;
+  String dir;
  
-  public SerialPicture(SerialStepFinishedListener l, int picN) {
+  public SerialPicture(StepFinishedListener l, Capture video, int picN, String directory) {
+    super(l);
     this.l = l;
     this.picN = picN;
+    this.video = video;
+    this.dir = directory;
   }
   
   public void go() {
-    saveFrame("output/picCrop" + picN + ".png");
+    //saveFrame("output/picCrop" + String.format("%04d", picN) + ".jpg");
+    if(video.available())video.read();
+    video.save("output/" + dir + "/" + String.format("%04d", picN) + ".jpg");
     l.stepFinished();
   }
   
@@ -132,7 +150,8 @@ public class SerialPicture implements SerialStep  {
   }
 }
 
-interface SerialStepFinishedListener {
+interface StepFinishedListener {
   void stepFinished();
 }
+
 

@@ -112,7 +112,7 @@ class Picture implements Step {
     path = new PicturePath(rig.x, rig.y);
     
     PImage cropImage = rig.takePicture();
-    cropImage.save("output/picCrop" + picN + ".jpg");
+    cropImage.save("output/" + picN + ".jpg");
   }
   
   public void tick() {

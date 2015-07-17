@@ -6,14 +6,12 @@ RigSys rs;
 Rig rig;
 
 void setup() {
-  size(660, 500);
+  size(640, 480);
   
-  rs = new RigSys();
-  //rig = rs.openRig(this, RigSys.PRINTCORE, 152.4f, 152.4f, 0f, 0f, 60f);
-  //rig = rs.openRig(this, RigSys.L1SIM, width, height, 110f, 110f, 200f);
-  rig = rs.openRig(this, RigSys.SERIAL, 152.4f, 152.4f, 0f, 0f, 60f);
+  rs = new RigSys(this);
+  rig = rs.openDefaultRig(RigSys.SERIAL, "fern-3");
   
-  rs.utils().setupMatrix(rig);
+  rs.utils().setupMatrix(rig, 50f, 50f, 50f, 50f);
   rig.go();
 }
 

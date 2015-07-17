@@ -20,12 +20,12 @@ public class GCodeRig implements Rig {
   }
   
   // Default
-  void draw() {
+  public void draw() {
   }
   
   
   // Ticking
-  void go() {
+  public void go() {
     println("Go!");
     
     // TODO: G code testing
@@ -37,7 +37,7 @@ public class GCodeRig implements Rig {
   }
   
   // Steps
-  void addMove(float x, float y) {
+  public void addMove(float x, float y) {
     String xS = String.format("%.2f", x);
     String yS = String.format("%.2f", y);
     if(!absMove) {
@@ -46,10 +46,12 @@ public class GCodeRig implements Rig {
     }
     instructions.add("G0 X" + xS + " Y" + yS);
   }
-  void addTakePicture() {
+  public void addTakePicture() {
     instructions.add("G4 P2000");
   }
-  void addLightSwitch(String id, boolean isOn) {}
+  public void addLightSwitch(String id, boolean isOn) {}
   
+  public float getPicSizeX() { return RigSys.SUPEREYES_PIC_SIZE_X; }
+  public float getPicSizeY() { return RigSys.SUPEREYES_PIC_SIZE_Y; }
 }
 

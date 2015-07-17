@@ -15,7 +15,7 @@ public class L1SimRig implements Rig {
   // Rig state
   float x, y;
   int size;
-  float picSize;
+  float picSizeX, picSizeY;
   float imgScaleX, imgScaleY;
   
   // Steps
@@ -28,7 +28,7 @@ public class L1SimRig implements Rig {
   PImage img;
   Light[] lights;
   
-  public L1SimRig(float boundsX, float boundsY, float x, float y, float picSize, String name) {
+  public L1SimRig(float boundsX, float boundsY, float x, float y, float picSizeX, float picSizeY, String inputName) {
     this.zoneX = MARGIN;
     this.zoneY = MARGIN;
     this.zoneWidth = boundsX - 2*MARGIN;
@@ -36,17 +36,19 @@ public class L1SimRig implements Rig {
     this.x = x;
     this.y = y;
     this.size = DEFAULT_CAM_SIZE;
-    this.picSize = picSize;
+    this.picSizeX = picSizeX;
+    this.picSizeY = picSizeY;
     
-    img = loadImage("input/" + name);
+    this.img = loadImage("input/" + inputName);
     
     // how much the real image is scaled down by
-    imgScaleX = (float)zoneWidth / (float)img.width;
-    imgScaleY = (float)zoneHeight / (float)img.height;  
+    this.imgScaleX = (float)zoneWidth / (float)img.width;
+    this.imgScaleY = (float)zoneHeight / (float)img.height;  
     
-    steps = new LinkedList<Step>();
-    pastSteps = new ArrayList<Step>();
-    setupLights();
+    this.steps = new LinkedList<Step>();
+    this.pastSteps = new ArrayList<Step>();
+    
+    this.setupLights();
   }
   
   //// DRAWING, OUTPUT ////
@@ -142,11 +144,6 @@ public class L1SimRig implements Rig {
     steps.add(new LightSwitch(id, isOn, FPS, this));
   }
   
-  //// GETTERS ////
-  public float getPicSize(){return picSize;}
-  public float getZoneWidth(){return zoneWidth;}
-  public float getZoneHeight(){return zoneHeight;}
-  
   //// LIGHTS ////
   public void setupLights() {
     lights = new Light[4];
@@ -181,12 +178,15 @@ public class L1SimRig implements Rig {
   
   // Picture-taking
   public PImage takePicture() {
-    int cropW = round(picSize / imgScaleX);
-    int cropH = round(picSize / imgScaleY);
-    int cropX = round((x - MARGIN - picSize/2) / imgScaleX);
-    int cropY = round((y - MARGIN - picSize/2) / imgScaleY);
+    int cropW = round(picSizeX / imgScaleX);
+    int cropH = round(picSizeY / imgScaleY);
+    int cropX = round((x - MARGIN - picSizeX/2) / imgScaleX);
+    int cropY = round((y - MARGIN - picSizeY/2) / imgScaleY);
     
     return img.get(cropX, cropY, cropW, cropH);
   }
+  
+  public float getPicSizeX() { return picSizeX; }
+  public float getPicSizeY() { return picSizeY; }
 }
 

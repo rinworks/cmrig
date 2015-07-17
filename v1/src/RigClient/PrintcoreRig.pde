@@ -1,7 +1,7 @@
 import java.util.*;
 import java.io.*;
 
-class PrintcoreRig implements Rig {
+public class PrintcoreRig implements Rig {
   String outputName;
   List<String> instructions;
   
@@ -16,7 +16,7 @@ class PrintcoreRig implements Rig {
   }
   
   // Default
-  void draw() {
+  public void draw() {
     tick();
   }
   
@@ -25,7 +25,7 @@ class PrintcoreRig implements Rig {
   BufferedReader br;
   
   // Ticking
-  void go() {
+  public void go() {
     println("Go!");
     
     // G code file saving
@@ -53,7 +53,7 @@ class PrintcoreRig implements Rig {
     }
   }
   
-  void tick() {
+  public void tick() {
     try {
       if((line = br.readLine()) != null) {
         System.out.println(line);
@@ -64,7 +64,7 @@ class PrintcoreRig implements Rig {
   }
   
   // Steps
-  void addMove(float x, float y) {
+  public void addMove(float x, float y) {
     String xS = String.format("%.2f", x);
     String yS = String.format("%.2f", y);
     if(!absMove) {
@@ -74,9 +74,11 @@ class PrintcoreRig implements Rig {
     instructions.add("G0 X" + xS + " Y" + yS);
   }
   
-  void addTakePicture() {
+  public void addTakePicture() {
     instructions.add("G4 P2000");
   }
-  void addLightSwitch(String id, boolean isOn) {}
+  public void addLightSwitch(String id, boolean isOn) {}
   
+  public float getPicSizeX() { return RigSys.SUPEREYES_PIC_SIZE_X; }
+  public float getPicSizeY() { return RigSys.SUPEREYES_PIC_SIZE_Y; }
 }
