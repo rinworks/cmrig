@@ -100,11 +100,13 @@ class Picture implements Step {
   PicturePath path;
   int picN;
   L1SimRig rig;
+  String outPath;
   
-  public Picture(int nOfTicks, int n, L1SimRig r) {
+  public Picture(int nOfTicks, int n, L1SimRig r, String outPath) {
     this.nOfTicks = nOfTicks;
     this.picN = n;
     this.rig = r;
+    this.outPath = outPath;
   }
   
   public void init() {
@@ -112,7 +114,7 @@ class Picture implements Step {
     path = new PicturePath(rig.x, rig.y);
     
     PImage cropImage = rig.takePicture();
-    cropImage.save("output/" + picN + ".jpg");
+    cropImage.save(savePath("output/" + outPath + "/" + picN + ".jpg"));
   }
   
   public void tick() {

@@ -28,7 +28,9 @@ public class L1SimRig implements Rig {
   PImage img;
   Light[] lights;
   
-  public L1SimRig(float boundsX, float boundsY, float x, float y, float picSizeX, float picSizeY, String inputName) {
+  String outputName;
+  
+  public L1SimRig(float boundsX, float boundsY, float x, float y, float picSizeX, float picSizeY, String inputName, String outputName) {
     this.zoneX = MARGIN;
     this.zoneY = MARGIN;
     this.zoneWidth = boundsX - 2*MARGIN;
@@ -40,6 +42,7 @@ public class L1SimRig implements Rig {
     this.picSizeY = picSizeY;
     
     this.img = loadImage("input/" + inputName);
+    this.outputName = outputName;
     
     // how much the real image is scaled down by
     this.imgScaleX = (float)zoneWidth / (float)img.width;
@@ -137,7 +140,7 @@ public class L1SimRig implements Rig {
   }
   
   public void addTakePicture() {
-    steps.add(new Picture(FPS, picN, this));
+    steps.add(new Picture(FPS, picN, this, outputName));
     picN++;
   }
   public void addLightSwitch(String id, boolean isOn) {
@@ -189,4 +192,3 @@ public class L1SimRig implements Rig {
   public float getPicSizeX() { return picSizeX; }
   public float getPicSizeY() { return picSizeY; }
 }
-

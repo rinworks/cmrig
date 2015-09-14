@@ -20,17 +20,20 @@ public class SerialGCodeStep extends SerialStep implements SerialPortEventListen
   protected SerialPort port;
   protected String[] code;
   protected int lineN;
+  protected PrinterHelper helper;
   
-  public SerialGCodeStep(StepFinishedListener l, SerialPort port) {
-    this(l, port, "");
+  public SerialGCodeStep(StepFinishedListener l, SerialPort port, PrinterHelper help) {
+    this(l, port, help, "");
   }
   
-  public SerialGCodeStep(StepFinishedListener l, SerialPort port, String codeString) {
+  public SerialGCodeStep(StepFinishedListener l, SerialPort port, PrinterHelper help,
+      String codeString) {
     super(l);
     this.port = port;
+    this.helper = help;
     this.lineN = 0;
     
-    setGCode(codeString);
+    this.setGCode(codeString);
   }
   
   /**
@@ -42,24 +45,31 @@ public class SerialGCodeStep extends SerialStep implements SerialPortEventListen
     this.code = GCodeHelper.parseGCode(codeString, "\n");
   }
   
+  /**
+   * Sends the current line of g code, based on {@link lineN}.
+   */
   private void sendGCode() throws SerialPortException {
     if(debug)println("Line number: " + lineN);
     port.writeString(code[lineN]);
     if(debug)print("SENT: " + code[lineN]);
   }
   
+  /**
+   * Runs the step.
+   */
   public void go() {
     if(code.length > 0)
       try {
         port.addEventListener(this);
-        if(debug)println("gcode event listener added");
         sendGCode();
       } catch (SerialPortException e) {
         e.printStackTrace();
       }
     else
-      l.stepFinished();
+      l.stepFinished(true); // empty code?
   }
+  
+  private String rxString = "";
   
   /**
    * Message received from printer.
@@ -70,20 +80,26 @@ public class SerialGCodeStep extends SerialStep implements SerialPortEventListen
     if(event.isRXCHAR()) {
       try {
         String in = port.readString();
+        // Appending instead of replacing -- sometimes the printer sends 'o' and 'k' separately for some reason
+        rxString += in;
         if(debug)print("RECD: " + in);
-        if(in.contains(SerialRig.OK)) { // line completed
+        
+        // Use the helper to interpret the received string
+        SerialResponse resp = helper.handleRx(rxString);
+        
+        if (resp == SerialResponse.SUCCESS) {
+          rxString = ""; // reset received message
           lineN++;
           if(lineN >= code.length) { // all the code finished
             port.removeEventListener();
-            if(debug)println("g code event listener removed");
-            if(debug)println("g code finished -> listener called");
-            l.stepFinished();
-          } else {
+            l.stepFinished(true);
+          } else { // keep sending code
             sendGCode();
           }
-        } else {
-          // TODO: HANDLE OTHER CASES
-          l.stepFinished(); // abort
+        } else if (resp == SerialResponse.WAIT) {
+          // do nothing
+        } else if (resp == SerialResponse.FAIL) {
+          l.stepFinished(false); // abort step
         }
       } catch (SerialPortException e) {
         e.printStackTrace();
@@ -94,36 +110,39 @@ public class SerialGCodeStep extends SerialStep implements SerialPortEventListen
   public String toString() {
     return Arrays.toString(code);
   }
-}
-
-public class SerialInit extends SerialGCodeStep {
-  public SerialInit(StepFinishedListener l, SerialPort port) {
-    super(l, port, GCodeHelper.GO_TO_HOME); 
-  }
-  
-  public String toString() {
-      return "INIT";
-  }
-}
+} //<>//
 
 public class SerialMove extends SerialGCodeStep {
   private float x, y;
   
-  public SerialMove(StepFinishedListener l, SerialPort port, float x, float y) {
-    super(l, port, "");
+  public SerialMove(StepFinishedListener l, SerialPort port, PrinterHelper help,
+      float x, float y) {
+    super(l, port, help);
     this.x = x;
     this.y = y;
     
     setGCode(GCodeHelper.getMoveGCode(x, y)
-      + GCodeHelper.WAIT_FOR_FINISH
+      + help.waitForFinish()
       + GCodeHelper.getWaitGCode(SerialRig.WAIT_MILLIS));
   }
-    
+  
+  public float getX() { return x; }
+  public float getY() { return y; }
+  
   public String toString() {
     return "MOVE TO X:" + x + ", Y:" + y;
   }
 }
 
+public class SerialWait extends SerialGCodeStep {
+  public SerialWait(StepFinishedListener l, SerialPort port, PrinterHelper help) {
+    super(l, port, help, GCodeHelper.getWaitGCode(SerialRig.WAIT_MILLIS));
+  }
+  
+  public String toString() {
+    return "WAIT";
+  }
+}
 
 public class SerialPicture extends SerialStep  {
   int picN;
@@ -132,7 +151,6 @@ public class SerialPicture extends SerialStep  {
  
   public SerialPicture(StepFinishedListener l, Capture video, int picN, String directory) {
     super(l);
-    this.l = l;
     this.picN = picN;
     this.video = video;
     this.dir = directory;
@@ -142,7 +160,7 @@ public class SerialPicture extends SerialStep  {
     //saveFrame("output/picCrop" + String.format("%04d", picN) + ".jpg");
     if(video.available())video.read();
     video.save("output/" + dir + "/" + String.format("%04d", picN) + ".jpg");
-    l.stepFinished();
+    l.stepFinished(true);
   }
   
   public String toString() {
@@ -150,8 +168,30 @@ public class SerialPicture extends SerialStep  {
   }
 }
 
-interface StepFinishedListener {
-  void stepFinished();
+public class SerialLightSwitch extends SerialStep {
+  Arduino ino;
+  int pin;
+  boolean isOn;
+  
+  public SerialLightSwitch(StepFinishedListener l, Arduino ino, int id, boolean isOn) {  
+    super(l);
+    this.ino = ino;
+    this.pin = id;
+    this.isOn = isOn;
+  }
+  
+  public void go() {
+    // on corresponds to LOW
+    ino.digitalWrite(pin, (isOn ? Arduino.LOW : Arduino.HIGH));
+    //delay(200);
+    l.stepFinished(true);
+  }
+  
+  public String toString() {
+    return "LIGHTS O" + (isOn ? "N" : "FF");
+  }
 }
 
-
+interface StepFinishedListener {
+  void stepFinished(boolean success);
+}
