@@ -15,17 +15,17 @@ public class RigUtils {
    * @param height  height of the matrix
    */
   public void setupMatrix(Rig r, float x, float y, float width, float height) {
-    if(r != null) {
+    if (r != null) {
       r.addLightSwitch("3", true);
       r.addLightSwitch("4", true);
       r.addLightSwitch("5", true);
       r.addLightSwitch("6", true);
-      
+
       int nX = ceil(width/r.getPicSizeX()) + 1; // # of pictures in the x 
       int nY = ceil(height/r.getPicSizeY()) + 1; // # of pictures in the y
-      for(int j = 0; j < nY; j++) { // row-major
+      for (int j = 0; j < nY; j++) { // row-major
         float picY = y + r.getPicSizeY()/2f + j*(r.getPicSizeY() - ((r.getPicSizeY() * nY - height)/(nY - 1)));
-        for(int i = 0; i < nX; i++) {
+        for (int i = 0; i < nX; i++) {
           float picX = x + r.getPicSizeX()/2f + i*(r.getPicSizeX() - ((r.getPicSizeX() * nX - width)/(nX - 1)));
           r.addMove(picX, picY);
           r.addTakePicture();
@@ -33,7 +33,19 @@ public class RigUtils {
       }
     }
   }
-  
+
+  void setupGlobalConfiguration(String configName) {
+    GlobalConfigManager gcm = new GlobalConfigManager();
+    //String[] configNames = gcm.list();
+    //println(configNames);
+    globalConfig =  gcm.getConfig(configName);
+    if (globalConfig == null) {
+      throw new RuntimeException("Configuration not found: "+configName);
+    }
+    println("Config \"" + myConfig + "\":\n"+configName);
+    //String[] cameras = Capture.list();
+    //println(cameras);
+  }
   public void setupNothing(Rig r) {
   }
 }

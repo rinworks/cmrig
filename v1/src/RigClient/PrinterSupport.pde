@@ -11,7 +11,7 @@ public interface PrinterHelper {
   public String waitForFinish();
   public boolean positionValid(float x, float y);
   public SerialResponse handleRx(String rxString);
-  public String portName();
+  /*public String portName(); OBSOLETE - use globalConfig.printerPort */
 }
 
 public class PrintrBotHelper implements PrinterHelper {
@@ -41,9 +41,9 @@ public class PrintrBotHelper implements PrinterHelper {
     }
   }
   
-  public String portName() {
+  /* OBSOLETE public String portName() {
     return "COM3";
-  }
+  }*/
 }
 
 public class RostockMaxHelper implements PrinterHelper {
@@ -81,7 +81,7 @@ public class RostockMaxHelper implements PrinterHelper {
     }
   }
   
-  public String portName() {
-    return "COM5";
-  }
+  /*public String portName() {
+    return "COM5"; OBSOLETE 
+  } */
 }
