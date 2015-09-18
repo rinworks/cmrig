@@ -49,7 +49,6 @@ public class SerialGCodeStep extends SerialStep implements SerialPortEventListen
    * Sends the current line of g code, based on {@link lineN}.
    */
   private void sendGCode() throws SerialPortException {
-    if(debug)println("Line number: " + lineN);
     port.writeString(code[lineN]);
     if(debug)print("SENT: " + code[lineN]);
   }
@@ -122,8 +121,7 @@ public class SerialMove extends SerialGCodeStep {
     this.y = y;
     
     setGCode(GCodeHelper.getMoveGCode(x, y)
-      + help.waitForFinish()
-      + GCodeHelper.getWaitGCode(SerialRig.WAIT_MILLIS));
+      + help.waitForFinish());
   }
   
   public float getX() { return x; }
@@ -131,16 +129,6 @@ public class SerialMove extends SerialGCodeStep {
   
   public String toString() {
     return "MOVE TO X:" + x + ", Y:" + y;
-  }
-}
-
-public class SerialWait extends SerialGCodeStep {
-  public SerialWait(StepFinishedListener l, SerialPort port, PrinterHelper help) {
-    super(l, port, help, GCodeHelper.getWaitGCode(SerialRig.WAIT_MILLIS));
-  }
-  
-  public String toString() {
-    return "WAIT";
   }
 }
 

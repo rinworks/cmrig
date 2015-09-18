@@ -16,7 +16,7 @@ public class RigSys {
   public static final float SUPEREYES_PIC_SIZE_X = 12.5f;
   public static final float SUPEREYES_PIC_SIZE_Y = 9f;
   
-  public static final float TEST = 35f;
+  public static final float DINO = 4.5f;
 
   private PApplet app;
 
@@ -52,7 +52,7 @@ public class RigSys {
         return new GCodeRig(app, "output/" + directory);
       case SERIAL:
         try {
-          return new SerialRig(app, "COM5", PrinterType.ROSTOCKMAX, "MICROSCOPE", "COM4", 640, 480, directory);
+          return new SerialRig(app, PrinterType.ROSTOCKMAX, "Dino-Lite Premier", "COM4", 640, 480, directory);
         } catch (SerialPortException e) {
           System.err.println("Printer not connected.");
         }/* catch (RuntimeException e) {

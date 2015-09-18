@@ -11,6 +11,7 @@ public interface PrinterHelper {
   public String waitForFinish();
   public boolean positionValid(float x, float y);
   public SerialResponse handleRx(String rxString);
+  public String portName();
 }
 
 public class PrintrBotHelper implements PrinterHelper {
@@ -40,26 +41,25 @@ public class PrintrBotHelper implements PrinterHelper {
     }
   }
   
-  public float matrixWidth() {
-    return X_BOUND;
-  }
-  
-  public float matrixHeight() {
-    return Y_BOUND;
+  public String portName() {
+    return "COM3";
   }
 }
 
 public class RostockMaxHelper implements PrinterHelper {
-  private static final int Z_OFFSET = 50;
+  public static final float Z_HOME = 394.61f;
+  public static final float Z_INIT = 291.61f; // for the big fossil bed
+  public static final float Z_OFFSET = 50f;//228f;
   
   public static final float BED_RADIUS = 120f;
   public static final float BUFFER = 10f;
   
   public String initialize() {
+    //String init = "M115\n";
     String home = "G28 X0 Y0 Z0\n";
-    String setZ = GCodeHelper.REL_MOVEMENT
-      + GCodeHelper.MOVE_PREFIX + " Z" + (-Z_OFFSET);
-    return home + setZ;
+    //String setZ = GCodeHelper.REL_MOVEMENT + GCodeHelper.MOVE_PREFIX + " Z" + -Z_OFFSET;
+    String setZ = GCodeHelper.ABS_MOVEMENT + GCodeHelper.MOVE_PREFIX + " Z" + Z_INIT;
+    return /*init + */ home + setZ;
   }
   
   public String waitForFinish() {
@@ -74,11 +74,14 @@ public class RostockMaxHelper implements PrinterHelper {
   public SerialResponse handleRx(String rxString) {
     if(rxString.contains(SerialRig.OK)) {
       return SerialResponse.SUCCESS;
-    } else if(rxString.contains(SerialRig.WAIT)) {
-      return SerialResponse.WAIT;
-    } else {
+    } else if(rxString.contains(SerialRig.ERROR)) {
       return SerialResponse.FAIL;
+    } else {
+      return SerialResponse.WAIT;
     }
   }
   
+  public String portName() {
+    return "COM5";
+  }
 }
