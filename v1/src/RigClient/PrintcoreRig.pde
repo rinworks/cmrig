@@ -56,7 +56,7 @@ public class PrintcoreRig implements Rig {
   public void tick() {
     try {
       if((line = br.readLine()) != null) {
-        System.out.println(line);
+        println(line);
       }
     } catch (Exception e) {
       if(debug)e.printStackTrace();

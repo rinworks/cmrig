@@ -1,5 +1,9 @@
 import processing.core.*;
 
+Minim minim;
+AudioSample beep;
+GlobalConfigData globalConfig;
+
 /**
  * Class that handles the overall rig system.
  *
@@ -19,9 +23,18 @@ public class RigSys {
   public static final float DINO = 4.5f;
 
   private PApplet app;
+  
+  private RigUtils utils;
 
   public RigSys(PApplet app) {
     this.app = app;
+    this.utils = new RigUtils();
+    
+    minim = new Minim(app);
+    beep = minim.loadSample("beep.mp3", 512);
+    
+    // Logging
+    Logger.setup(Logger.CONSOLE);
   }
 
   /**
@@ -87,7 +100,7 @@ public class RigSys {
   }
 
   public RigUtils utils() {
-    return new RigUtils();
+    return utils;
   }
 }
 

@@ -42,10 +42,11 @@ public class RigUtils {
     if (globalConfig == null) {
       throw new RuntimeException("Configuration not found: "+configName);
     }
-    println("Config \"" + myConfig + "\":\n"+configName);
+    println("Config \"" + globalConfig + "\":\n"+configName);
     //String[] cameras = Capture.list();
     //println(cameras);
   }
+  
   public void setupNothing(Rig r) {
   }
 }

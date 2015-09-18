@@ -83,22 +83,25 @@ public class SerialGCodeStep extends SerialStep implements SerialPortEventListen
         rxString += in;
         if(debug)print("RECD: " + in);
         
-        // Use the helper to interpret the received string
-        SerialResponse resp = helper.handleRx(rxString);
-        
-        if (resp == SerialResponse.SUCCESS) {
-          rxString = ""; // reset received message
-          lineN++;
-          if(lineN >= code.length) { // all the code finished
-            port.removeEventListener();
-            l.stepFinished(true);
-          } else { // keep sending code
-            sendGCode();
+        // Only handle the response if it's a complete response
+        if(rxString.endsWith(GCodeHelper.LINE_BREAK)) {
+          // Use the helper to interpret the received string
+          SerialResponse resp = helper.handleRx(rxString);
+          
+          if (resp == SerialResponse.SUCCESS) {
+            rxString = ""; // reset received message
+            lineN++;
+            if(lineN >= code.length) { // all the code finished
+              port.removeEventListener();
+              l.stepFinished(true);
+            } else { // keep sending code
+              sendGCode();
+            }
+          } else if (resp == SerialResponse.WAIT) {
+            // do nothing
+          } else if (resp == SerialResponse.FAIL) {
+            l.stepFinished(false); // abort step
           }
-        } else if (resp == SerialResponse.WAIT) {
-          // do nothing
-        } else if (resp == SerialResponse.FAIL) {
-          l.stepFinished(false); // abort step
         }
       } catch (SerialPortException e) {
         e.printStackTrace();
@@ -106,7 +109,7 @@ public class SerialGCodeStep extends SerialStep implements SerialPortEventListen
     }
   }
   
-  public String toString() {
+  public String toString() { //<>//
     return Arrays.toString(code);
   }
 } //<>//
@@ -146,6 +149,7 @@ public class SerialPicture extends SerialStep  {
   
   public void go() {
     //saveFrame("output/picCrop" + String.format("%04d", picN) + ".jpg");
+    //beep.trigger();
     if(video.available())video.read();
     video.save("output/" + dir + "/" + String.format("%04d", picN) + ".jpg");
     l.stepFinished(true);
@@ -177,6 +181,24 @@ public class SerialLightSwitch extends SerialStep {
   
   public String toString() {
     return "LIGHTS O" + (isOn ? "N" : "FF");
+  }
+}
+
+public class SerialWait extends SerialStep {
+  int duration;
+  
+  public SerialWait(StepFinishedListener l, int duration) {
+    super(l);
+    this.duration = duration;
+  }
+  
+  public void go() {
+    delay(duration); // pauses execution!!
+    l.stepFinished(true);
+  }
+  
+  public String toString() {
+    return "WAIT FOR " + duration + "ms";
   }
 }
 

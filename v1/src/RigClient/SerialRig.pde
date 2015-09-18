@@ -2,7 +2,8 @@ import processing.video.*;
 import cc.arduino.*;
 
 public class SerialRig implements Rig, StepFinishedListener {
-  public static final int WAIT_MILLIS = 1500;
+  public static final int WAIT_MILLIS = 2500;
+  public static final int FEED_RATE = 3000;
   
   Queue<SerialStep> steps;
   SerialStep step;
@@ -25,7 +26,7 @@ public class SerialRig implements Rig, StepFinishedListener {
   public static final String OK = "ok";
   public static final String WAIT = "wait";
   public static final String ERROR = "error";
-  
+   //<>//
   public SerialRig(PApplet app, //<>//
       PrinterType type,
       String cameraName, String arduinoPort,
@@ -40,9 +41,9 @@ public class SerialRig implements Rig, StepFinishedListener {
     if(type == PrinterType.PRINTRBOT) this.printerHelper = new PrintrBotHelper();
     else if(type == PrinterType.ROSTOCKMAX) this.printerHelper = new RostockMaxHelper();
     
-    this.printerPort = new SerialPort(printerHelper.portName());
+    this.printerPort = new SerialPort(globalConfig.printerPort);
     printerPort.openPort();
-    printerPort.setParams(250000, 8, 1, 0);
+    printerPort.setParams(globalConfig.printerBaudRate, 8, 1, 0);
     if(debug)println("Printer connected.");
     
     steps.add(new SerialGCodeStep(this, printerPort, printerHelper, printerHelper.initialize()));
@@ -110,6 +111,7 @@ public class SerialRig implements Rig, StepFinishedListener {
   public void stepFinished(boolean success) {
     if(success) {
       if(debug)println("--- FINISHED ---");
+      if(debug)beep.trigger();
       if(!steps.isEmpty()) {
         step = steps.remove();
         if(debug)announce();
@@ -143,7 +145,8 @@ public class SerialRig implements Rig, StepFinishedListener {
   // Step Setup
   public void addMove(float x, float y) {
     steps.add(new SerialMove(this, printerPort, printerHelper, x, y));
-    steps.add(new SerialGCodeStep(this, printerPort, printerHelper, GCodeHelper.getWaitGCode(SerialRig.WAIT_MILLIS)));
+    steps.add(new SerialWait(this, SerialRig.WAIT_MILLIS));
+    //steps.add(new SerialGCodeStep(this, printerPort, printerHelper, GCodeHelper.getWaitGCode(SerialRig.WAIT_MILLIS)));
   }
   public void addTakePicture() {
     // Only take a picture if there's a camera connected

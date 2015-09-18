@@ -19,7 +19,7 @@ public class PrintrBotHelper implements PrinterHelper {
   public static final float Y_BOUND = 152.4f;
   
   public String initialize() {
-    return "G28 X Y\n";
+    return "G28 X Y\nG0 F" + SerialRig.FEED_RATE + "\n";
   }
   
   // TODO: Is this really necessary?
@@ -57,6 +57,7 @@ public class RostockMaxHelper implements PrinterHelper {
   public String initialize() {
     //String init = "M115\n";
     String home = "G28 X0 Y0 Z0\n";
+    String setFeedRate = "G0 F" + SerialRig.FEED_RATE + "\n";
     //String setZ = GCodeHelper.REL_MOVEMENT + GCodeHelper.MOVE_PREFIX + " Z" + -Z_OFFSET;
     String setZ = GCodeHelper.ABS_MOVEMENT + GCodeHelper.MOVE_PREFIX + " Z" + Z_INIT;
     return /*init + */ home + setZ;

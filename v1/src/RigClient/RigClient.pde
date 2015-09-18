@@ -1,3 +1,10 @@
+import ddf.minim.*; //<>// //<>//
+import ddf.minim.analysis.*;
+import ddf.minim.effects.*;
+import ddf.minim.signals.*;
+import ddf.minim.spi.*;
+import ddf.minim.ugens.*;
+
 import java.util.*;
 
 boolean debug = true;
@@ -9,17 +16,10 @@ void setup() {
   size(640, 480);
   
   rs = new RigSys(this);
-  rig = rs.openDefaultRig(RigSys.SERIAL, "fossil-3");
+  rs.utils().setupGlobalConfiguration("RostockMakerFaire");
+  rig = rs.openDefaultRig(RigSys.SERIAL, "test");
   
-  float val = (float) (RostockMaxHelper.BED_RADIUS)/sqrt(2.0);
-  float startX = -20f, startY = -20f, wid = 40f, hei = 40f;
-  //rs.utils().setupMatrix(rig, startX, startY, wid, hei); //<>//
-  
-  rig.addMove(20, 20);
-  for(int i = 3; i <= 6; i++) {
-    rig.addLightSwitch(i + "", true);
-  }
-  rig.addTakePicture();
+  rs.utils().setupNothing(rig);
   
   if(rig != null)
     rig.go();

@@ -54,4 +54,3 @@ public class GCodeRig implements Rig {
   public float getPicSizeX() { return RigSys.SUPEREYES_PIC_SIZE_X; }
   public float getPicSizeY() { return RigSys.SUPEREYES_PIC_SIZE_Y; }
 }
-

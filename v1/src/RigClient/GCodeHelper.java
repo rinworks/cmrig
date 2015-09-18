@@ -4,6 +4,7 @@ public class GCodeHelper {
   public static final String WAIT_PREFIX = "G4";
   public static final String ABS_MOVEMENT = "G90\n";
   public static final String REL_MOVEMENT = "G91\n";
+  public static final String LINE_BREAK = "\n";
 
   /**
    * Parses the passed-in G code to establish how many lines of g codes there
