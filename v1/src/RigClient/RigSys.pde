@@ -1,7 +1,12 @@
 import processing.core.*;
 
+boolean sound = false;
+boolean debug = true;
+boolean deepdebug = false;
+
 Minim minim;
 AudioSample beep;
+
 GlobalConfigData globalConfig;
 
 /**
@@ -34,8 +39,10 @@ public class RigSys {
     this.utils = new RigUtils();
     
     // Beep debugging
-    minim = new Minim(app);
-    beep = minim.loadSample("beep.mp3", 512);
+    if(sound) {
+      minim = new Minim(app);
+      beep = minim.loadSample("beep.mp3", 512);
+    }
     
     // Logging
     //Logger.setup(Logger.CONSOLE);
@@ -101,10 +108,12 @@ public class RigSys {
 public interface Rig {
   public void draw();
   public void go();
+  
   public void addMove(float x, float y);
   public void addTakePicture();
-  public String[] lights();
   public void addLightSwitch(String id, boolean isOn);
+  
+  public String[] lights();
   
   public float getPicSizeX();
   public float getPicSizeY();

@@ -50,7 +50,7 @@ public class SerialGCodeStep extends SerialStep implements SerialPortEventListen
    */
   private void sendGCode() throws SerialPortException {
     port.writeString(code[lineN]);
-    if(debug)print("SENT: " + code[lineN]);
+    if(deepdebug)print("SENT: " + code[lineN]);
   }
   
   /**
@@ -81,7 +81,7 @@ public class SerialGCodeStep extends SerialStep implements SerialPortEventListen
         String in = port.readString();
         // Appending instead of replacing -- sometimes the printer sends 'o' and 'k' separately for some reason
         rxString += in;
-        if(debug)print("RECD: " + in);
+        if(deepdebug)print("RECD: " + in);
         
         // Only handle the response if it's a complete response
         if(rxString.endsWith(GCodeHelper.LINE_BREAK)) {
@@ -110,9 +110,27 @@ public class SerialGCodeStep extends SerialStep implements SerialPortEventListen
   }
   
   public String toString() { //<>//
-    return Arrays.toString(code);
+    String[] clean = new String[code.length];
+    for(int i = 0; i < code.length; i++) {
+      if(code[i].endsWith(GCodeHelper.LINE_BREAK))
+        clean[i] = code[i].substring(0, code[i].length()-1);
+      else
+        clean[i] = code[i];
+    }
+    return Arrays.toString(clean);
   }
 } //<>//
+
+public class SerialInit extends SerialGCodeStep {
+  public SerialInit(StepFinishedListener l, SerialPort port, PrinterHelper help) {
+    super(l, port, help);
+    setGCode(help.initialize());
+  }
+  
+  public String toString() {
+    return "Initialize";
+  }
+}
 
 public class SerialMove extends SerialGCodeStep {
   private float x, y;
@@ -131,18 +149,18 @@ public class SerialMove extends SerialGCodeStep {
   public float getY() { return y; }
   
   public String toString() {
-    return "MOVE TO X:" + x + ", Y:" + y;
+    return "Move to X:" + x + ", Y:" + y;
   }
 }
 
 public class SerialPicture extends SerialStep  {
-  int picN;
+  String picN;
   Capture video;
   String dir;
  
   public SerialPicture(StepFinishedListener l, Capture video, int picN, String directory) {
     super(l);
-    this.picN = picN;
+    this.picN = String.format("%04d", picN);
     this.video = video;
     this.dir = directory;
   }
@@ -151,12 +169,13 @@ public class SerialPicture extends SerialStep  {
     //saveFrame("output/picCrop" + String.format("%04d", picN) + ".jpg");
     //beep.trigger();
     if(video.available())video.read();
-    video.save("output/" + dir + "/" + String.format("%04d", picN) + ".jpg");
+    video.save("output/" + dir + "/" + picN + ".jpg");
+    if(deepdebug)println("Picture " + picN + " saved.");
     l.stepFinished(true);
   }
   
   public String toString() {
-    return "PICTURE";
+    return "Taking picture " + picN;
   }
 }
 
@@ -173,14 +192,14 @@ public class SerialLightSwitch extends SerialStep {
   }
   
   public void go() {
-    // on corresponds to LOW
+    // On corresponds to LOW
     ino.digitalWrite(pin, (isOn ? Arduino.LOW : Arduino.HIGH));
-    //delay(200);
+    if(deepdebug)println("Light " + pin + " turned o" + (isOn ? "n." : "ff."));
     l.stepFinished(true);
   }
   
   public String toString() {
-    return "LIGHTS O" + (isOn ? "N" : "FF");
+    return "Light " + pin + " o" + (isOn ? "n" : "ff");
   }
 }
 
@@ -198,7 +217,7 @@ public class SerialWait extends SerialStep {
   }
   
   public String toString() {
-    return "WAIT FOR " + duration + "ms";
+    return "Wait for " + duration + "ms";
   }
 }
 

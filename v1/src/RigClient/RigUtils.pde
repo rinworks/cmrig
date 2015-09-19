@@ -14,13 +14,13 @@ public class RigUtils {
    * @param width  width of the matrix
    * @param height  height of the matrix
    */
-  public void setupMatrix(Rig r, float x, float y, float width, float height) {
+  public void setupMatrix(Rig r, boolean lightsOn, float x, float y, float width, float height) {
     if (r != null) {
-      r.addLightSwitch("3", true);
-      r.addLightSwitch("4", true);
-      r.addLightSwitch("5", true);
-      r.addLightSwitch("6", true);
-
+      String[] l = r.lights();
+      for(String light : l) {
+        r.addLightSwitch(light, lightsOn);
+      }
+      
       int nX = ceil(width/r.getPicSizeX()) + 1; // # of pictures in the x 
       int nY = ceil(height/r.getPicSizeY()) + 1; // # of pictures in the y
       for (int j = 0; j < nY; j++) { // row-major

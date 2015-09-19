@@ -2,7 +2,7 @@ import processing.video.*;
 import cc.arduino.*;
 
 public class SerialRig implements Rig, StepFinishedListener {
-  public static final int WAIT_MILLIS = 2500;
+  public static final int PIC_MILLIS = 2500;
   public static final int LIGHT_MILLIS = 800;
   public static final int FEED_RATE = 3000;
   
@@ -32,6 +32,7 @@ public class SerialRig implements Rig, StepFinishedListener {
   public SerialRig(PApplet app, //<>//
       int camWidth, int camHeight, String directory)
       throws SerialPortException/*, RuntimeException*/ {
+    if(debug)println();
         
     this.steps = new LinkedList<SerialStep>();
     this.step = null;    
@@ -46,7 +47,7 @@ public class SerialRig implements Rig, StepFinishedListener {
     printerPort.setParams(globalConfig.printerBaudRate, 8, 1, 0);
     if(debug)println("Printer connected.");
     
-    steps.add(new SerialGCodeStep(this, printerPort, printerHelper, printerHelper.initialize()));
+    steps.add(new SerialInit(this, printerPort, printerHelper));
     
     // Camera
     if(cameraExists(globalConfig.mainCamera)) {
@@ -71,6 +72,8 @@ public class SerialRig implements Rig, StepFinishedListener {
       ino = null;
       if(debug)println("Arduino not connected.");
     } 
+    
+    if(debug)println();
   }
   
   public boolean gCodeValid() {
@@ -111,8 +114,8 @@ public class SerialRig implements Rig, StepFinishedListener {
    */
   public void stepFinished(boolean success) {
     if(success) {
-      if(debug)println("--- FINISHED ---");
-      if(debug)beep.trigger();
+      if(debug)println(" finished! ---");
+      if(sound)beep.trigger();
       if(!steps.isEmpty()) {
         step = steps.remove();
         if(debug)announce();
@@ -129,7 +132,7 @@ public class SerialRig implements Rig, StepFinishedListener {
    * Finishes the execution.
    */
   public void finish(boolean success) {
-    if(debug)println(success ? "Done!" : "Aborted.");
+    if(debug)println("\n" + (success ? "Done!" : "Aborted."));
     try {
       if(printerPort.isOpened())
         printerPort.closePort();
@@ -140,21 +143,19 @@ public class SerialRig implements Rig, StepFinishedListener {
   }
   
   public void announce() {
-    println("--- NOW EXECUTING: " + step + " ---");
+    print("--- " + step + " ...");
   }
   
   // Step Setup
   public void addMove(float x, float y) {
     steps.add(new SerialMove(this, printerPort, printerHelper, x, y));
-    steps.add(new SerialWait(this, SerialRig.WAIT_MILLIS));
-    //steps.add(new SerialGCodeStep(this, printerPort, printerHelper, GCodeHelper.getWaitGCode(SerialRig.WAIT_MILLIS)));
+    //steps.add(new SerialWait(this, SerialRig.PIC_MILLIS));
   }
   public void addTakePicture() {
     // Only take a picture if there's a camera connected
     if(cam1 != null) {
       picN++;
-      //steps.add(new SerialGCodeStep(this, printerPort, printerHelper, GCodeHelper.getWaitGCode(SerialRig.WAIT_MILLIS)));
-      steps.add(new SerialWait(this, SerialRig.WAIT_MILLIS));
+      steps.add(new SerialWait(this, SerialRig.PIC_MILLIS));
       steps.add(new SerialPicture(this, cam1, picN, dir));
     }
   }

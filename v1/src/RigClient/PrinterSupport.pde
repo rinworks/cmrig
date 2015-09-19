@@ -50,7 +50,7 @@ public class PrintrBotHelper implements PrinterHelper {
 
 public class RostockMaxHelper implements PrinterHelper {
   public static final float Z_HOME = 394.61f;
-  public static final float Z_INIT = 291.61f; // for the big fossil bed
+  public static final float Z_INIT = 251.61f; // for the big fossil bed
   public static final float Z_OFFSET = 50f;//228f;
   
   public static final float BED_RADIUS = 120f;
