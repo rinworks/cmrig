@@ -18,6 +18,8 @@ public class PrintrBotHelper implements PrinterHelper {
   public static final float X_BOUND = 152.4f;
   public static final float Y_BOUND = 152.4f;
   
+  //public static final String[] LIGHTS = new String[0];
+  
   public String initialize() {
     return "G28 X Y\nG0 F" + SerialRig.FEED_RATE + "\n";
   }

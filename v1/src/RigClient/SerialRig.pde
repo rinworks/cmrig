@@ -3,6 +3,7 @@ import cc.arduino.*;
 
 public class SerialRig implements Rig, StepFinishedListener {
   public static final int WAIT_MILLIS = 2500;
+  public static final int LIGHT_MILLIS = 800;
   public static final int FEED_RATE = 3000;
   
   Queue<SerialStep> steps;
@@ -13,9 +14,10 @@ public class SerialRig implements Rig, StepFinishedListener {
   
   // Camera
   int picN = 0;
-  Capture video;
+  Capture cam1;
   
   // Lights
+  String[] lightIds;
   Arduino ino;
   
   // Saving
@@ -36,8 +38,8 @@ public class SerialRig implements Rig, StepFinishedListener {
     this.dir = directory;
     
     // Printer
-    if(globalConfig.type == PrinterType.PRINTRBOT) this.printerHelper = new PrintrBotHelper();
-    else if(globalConfig.type == PrinterType.ROSTOCKMAX) this.printerHelper = new RostockMaxHelper();
+    if(globalConfig.printerType == PrinterType.PRINTRBOT) this.printerHelper = new PrintrBotHelper();
+    else if(globalConfig.printerType == PrinterType.ROSTOCKMAX) this.printerHelper = new RostockMaxHelper();
     
     this.printerPort = new SerialPort(globalConfig.printerPort);
     printerPort.openPort();
@@ -48,11 +50,11 @@ public class SerialRig implements Rig, StepFinishedListener {
     
     // Camera
     if(cameraExists(globalConfig.mainCamera)) {
-      this.video = new Capture(app, camWidth, camHeight, globalConfig.mainCamera);
+      this.cam1 = new Capture(app, camWidth, camHeight, globalConfig.mainCamera);
       if(debug)println("Camera connected.");
-      video.start();
+      cam1.start();
     } else {
-      this.video = null;
+      this.cam1 = null;
       if(debug)println("Camera not connected.");
     }
     
@@ -64,6 +66,7 @@ public class SerialRig implements Rig, StepFinishedListener {
         ino.digitalWrite(i, Arduino.HIGH);
       }
       if(debug)println("Arduino connected.");
+      lightIds = globalConfig.lights;
     } catch (Exception e) {
       ino = null;
       if(debug)println("Arduino not connected.");
@@ -82,11 +85,11 @@ public class SerialRig implements Rig, StepFinishedListener {
   }
   
   public void draw() {
-    if(video != null) {
-      if(video.available()) {
-        video.read();
+    if(cam1 != null) {
+      if(cam1.available()) {
+        cam1.read();
       }
-      image(video, 0, 0);
+      image(cam1, 0, 0);
     } else {
       text("No camera connected.", 0, 0);
     }
@@ -148,16 +151,21 @@ public class SerialRig implements Rig, StepFinishedListener {
   }
   public void addTakePicture() {
     // Only take a picture if there's a camera connected
-    if(video != null) {
+    if(cam1 != null) {
       picN++;
-      steps.add(new SerialGCodeStep(this, printerPort, printerHelper, GCodeHelper.getWaitGCode(SerialRig.WAIT_MILLIS)));
-      steps.add(new SerialPicture(this, video, picN, dir));
+      //steps.add(new SerialGCodeStep(this, printerPort, printerHelper, GCodeHelper.getWaitGCode(SerialRig.WAIT_MILLIS)));
+      steps.add(new SerialWait(this, SerialRig.WAIT_MILLIS));
+      steps.add(new SerialPicture(this, cam1, picN, dir));
     }
   }
   public void addLightSwitch(String id, boolean isOn) {
     // Only add a light switch if the Arduino has been connected
     if(ino!=null) steps.add(new SerialLightSwitch(this, ino, Integer.parseInt(id), isOn));
-    steps.add(new SerialGCodeStep(this, printerPort, printerHelper, GCodeHelper.getWaitGCode(SerialRig.WAIT_MILLIS)));
+    steps.add(new SerialWait(this, LIGHT_MILLIS));
+  }
+  
+  public String[] lights() {
+    return lightIds;
   }
   
   /**

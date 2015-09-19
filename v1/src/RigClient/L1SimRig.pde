@@ -168,6 +168,14 @@ public class L1SimRig implements Rig {
         l.off();
   }
   
+  public String[] lights() {
+    String[] l = new String[lights.length];
+    for(int i = 0; i < lights.length; i++) {
+      l[i] = lights[i].id;
+    }
+    return l;
+  }
+  
   //// OPERATIONS ////
   // Coarse movement
   public void change(float dX, float dY) {

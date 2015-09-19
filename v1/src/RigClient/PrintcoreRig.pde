@@ -77,6 +77,7 @@ public class PrintcoreRig implements Rig {
   public void addTakePicture() {
     instructions.add("G4 P2000");
   }
+  public String[] lights(){return null;}
   public void addLightSwitch(String id, boolean isOn) {}
   
   public float getPicSizeX() { return RigSys.SUPEREYES_PIC_SIZE_X; }

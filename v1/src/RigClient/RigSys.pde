@@ -103,6 +103,7 @@ public interface Rig {
   public void go();
   public void addMove(float x, float y);
   public void addTakePicture();
+  public String[] lights();
   public void addLightSwitch(String id, boolean isOn);
   
   public float getPicSizeX();

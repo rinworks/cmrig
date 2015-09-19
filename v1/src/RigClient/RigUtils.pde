@@ -47,6 +47,12 @@ public class RigUtils {
     //println(cameras);
   }
   
-  public void setupNothing(Rig r) {
+  void basicSetup(Rig r) {
+    String[] l = r.lights();
+    if(l != null) {
+      for(String id : r.lights()) {
+        r.addLightSwitch(id, false);
+      }
+    }
   }
 }
