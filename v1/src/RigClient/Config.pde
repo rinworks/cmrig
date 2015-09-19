@@ -39,7 +39,7 @@ class GlobalConfigManager {
     // Add all named configs here...
     //  Config name, printer port, arduino port, printer baud rate, printer type, main camera, secondary camera
     configs.put("PrintrbotMakerFaire", new GlobalConfigData("COM5", "", 250000, PrinterType.PRINTRBOT, "MICROSCOPE", "")); // , PrinterType.ROSTOCKMAX
-    configs.put("RostockMakerFaire", new GlobalConfigData("COM5", "COM2", 250000, PrinterType.ROSTOCKMAX, "Z Dino-Lite Premier", "CAM2"));
+    configs.put("RostockMakerFaire", new GlobalConfigData("COM5", "COM4", 250000, PrinterType.ROSTOCKMAX, "Z Dino-Lite Premier", "CAM2"));
   }
   
   String[] list() {

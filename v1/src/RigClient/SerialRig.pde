@@ -28,8 +28,6 @@ public class SerialRig implements Rig, StepFinishedListener {
   public static final String ERROR = "error";
    //<>//
   public SerialRig(PApplet app, //<>//
-      PrinterType type,
-      String cameraName, String arduinoPort,
       int camWidth, int camHeight, String directory)
       throws SerialPortException/*, RuntimeException*/ {
         
@@ -38,8 +36,8 @@ public class SerialRig implements Rig, StepFinishedListener {
     this.dir = directory;
     
     // Printer
-    if(type == PrinterType.PRINTRBOT) this.printerHelper = new PrintrBotHelper();
-    else if(type == PrinterType.ROSTOCKMAX) this.printerHelper = new RostockMaxHelper();
+    if(globalConfig.type == PrinterType.PRINTRBOT) this.printerHelper = new PrintrBotHelper();
+    else if(globalConfig.type == PrinterType.ROSTOCKMAX) this.printerHelper = new RostockMaxHelper();
     
     this.printerPort = new SerialPort(globalConfig.printerPort);
     printerPort.openPort();
@@ -49,8 +47,8 @@ public class SerialRig implements Rig, StepFinishedListener {
     steps.add(new SerialGCodeStep(this, printerPort, printerHelper, printerHelper.initialize()));
     
     // Camera
-    if(cameraExists(cameraName)) {
-      this.video = new Capture(app, camWidth, camHeight, cameraName);
+    if(cameraExists(globalConfig.mainCamera)) {
+      this.video = new Capture(app, camWidth, camHeight, globalConfig.mainCamera);
       if(debug)println("Camera connected.");
       video.start();
     } else {
@@ -60,7 +58,7 @@ public class SerialRig implements Rig, StepFinishedListener {
     
     // Lights
     try {
-      ino = new Arduino(app, arduinoPort, 57600);
+      ino = new Arduino(app, globalConfig.arduinoPort, 57600);
       for(int i = 0; i < 13; i++) {
         ino.pinMode(i, Arduino.OUTPUT);
         ino.digitalWrite(i, Arduino.HIGH);

@@ -11,8 +11,8 @@ GlobalConfigData globalConfig;
  */
 public class RigSys {
   public static final int L1SIM = 0; // L1 Simulator, within Processing
-  public static final int PRINTCORE = 1; // Calls the Printcore process
-  public static final int GCODE = 2; // Pure GCode emitter, using Processing's Serial library
+  //public static final int PRINTCORE = 1; // Calls the Printcore process
+  //public static final int GCODE = 2; // Pure GCode emitter, using Processing's Serial library
   public static final int SERIAL = 3; // Serial output, works with camera and
                     // lights
   
@@ -26,15 +26,19 @@ public class RigSys {
   
   private RigUtils utils;
 
+  /**
+   * Creates a new Rig system.
+   */
   public RigSys(PApplet app) {
     this.app = app;
     this.utils = new RigUtils();
     
+    // Beep debugging
     minim = new Minim(app);
     beep = minim.loadSample("beep.mp3", 512);
     
     // Logging
-    Logger.setup(Logger.CONSOLE);
+    //Logger.setup(Logger.CONSOLE);
   }
 
   /**
@@ -55,44 +59,29 @@ public class RigSys {
   /**
    * Opens a new real rig.
    *
-   * @param type the type of real rig
    * @param directory the directory to save images under
-   * @returns null if the type is not that of a real rig  
    */
-  public Rig openRealRig(int type, String directory) {
-    switch (type) {
-      case GCODE:
-        return new GCodeRig(app, "output/" + directory);
-      case SERIAL:
-        try {
-          return new SerialRig(app, PrinterType.ROSTOCKMAX, "Dino-Lite Premier", "COM4", 640, 480, directory);
-        } catch (SerialPortException e) {
-          System.err.println("Printer not connected.");
-        }/* catch (RuntimeException e) {
-          System.err.println("Arduino not connected.");
-        }*/
-        return null;
-      case PRINTCORE:
-        return new PrintcoreRig("supercalifragilistictest.g");
-      default:
-        return null;
+  public Rig openRealRig(String directory) {
+    try {
+      return new SerialRig(app, 640, 480, directory);
+    } catch (SerialPortException e) {
+      System.err.println("Printer not connected.");
     }
+    return null;
   }
 
   /**
-   * Opens a new rig, given the parent applet, the type of rig,
-   * <b><i>default</i></b> configurations details.
+   * Opens a new rig, given the parent applet, the type of rig, with
+   * <b><i>default</i></b> configuration details from the global 
+   * configuration.
    * 
-   * @param app
    * @param type
    * @return
    */
   public Rig openDefaultRig(int type, String dir) {
     switch (type) {
-    case GCODE:
     case SERIAL:
-    case PRINTCORE:
-      return openRealRig(type, dir);
+      return openRealRig(dir);
     case L1SIM:
     default:
       return openSimRig(type, app.width, app.height, 110f, 110f, 200f, 200f, "fossil.jpg", dir);
