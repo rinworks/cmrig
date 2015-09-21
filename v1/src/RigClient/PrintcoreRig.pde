@@ -74,7 +74,7 @@ public class PrintcoreRig implements Rig {
     instructions.add("G0 X" + xS + " Y" + yS);
   }
   
-  public void addTakePicture() {
+  public void addTakePicture(String name) {
     instructions.add("G4 P2000");
   }
   public String[] lights(){return null;}

@@ -23,7 +23,7 @@ public class L1SimRig implements Rig {
   List<Step> pastSteps;
   Step curr = null;
   boolean paused = true;
-  int picN = 0;
+  //int picN = 0;
   
   PImage img;
   Light[] lights;
@@ -139,9 +139,8 @@ public class L1SimRig implements Rig {
     steps.add(new Move(x + MARGIN, y + MARGIN, this));
   }
   
-  public void addTakePicture() {
-    steps.add(new Picture(FPS, picN, this, outputName));
-    picN++;
+  public void addTakePicture(String name) {
+    steps.add(new Picture(FPS, name, this, outputName));
   }
   public void addLightSwitch(String id, boolean isOn) {
     steps.add(new LightSwitch(id, isOn, FPS, this));

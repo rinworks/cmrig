@@ -158,9 +158,9 @@ public class SerialPicture extends SerialStep  {
   Capture video;
   String dir;
  
-  public SerialPicture(StepFinishedListener l, Capture video, int picN, String directory) {
+  public SerialPicture(StepFinishedListener l, Capture video, String picN, String directory) {
     super(l);
-    this.picN = String.format("%04d", picN);
+    this.picN = picN;
     this.video = video;
     this.dir = directory;
   }

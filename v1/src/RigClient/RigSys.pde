@@ -19,16 +19,17 @@ public class RigSys {
   //public static final int PRINTCORE = 1; // Calls the Printcore process
   //public static final int GCODE = 2; // Pure GCode emitter, using Processing's Serial library
   public static final int SERIAL = 3; // Serial output, works with camera and
-                    // lights
-  
+  // lights
+
   // TERRIBLY INACCURATE, CHANGES FOR EACH PICTURE AND Z-VALUE
   public static final float SUPEREYES_PIC_SIZE_X = 12.5f;
   public static final float SUPEREYES_PIC_SIZE_Y = 9f;
-  
-  public static final float DINO = 4.5f;
+
+  public static final float DINO = 2.3f;
+  public static final float LOL = 10f;
 
   private PApplet app;
-  
+
   private RigUtils utils;
 
   /**
@@ -37,13 +38,13 @@ public class RigSys {
   public RigSys(PApplet app) {
     this.app = app;
     this.utils = new RigUtils();
-    
+
     // Beep debugging
-    if(sound) {
+    if (sound) {
       minim = new Minim(app);
       beep = minim.loadSample("beep.mp3", 512);
     }
-    
+
     // Logging
     //Logger.setup(Logger.CONSOLE);
   }
@@ -53,25 +54,26 @@ public class RigSys {
    *
    * @returns null if the type is not that of a sim rig
    */
-  public Rig openSimRig(int type, float boundsX, float boundsY, float initX, float initY, float picSizeX, float picSizeY,
-      String in, String out) {
+  public Rig openSimRig(int type, float boundsX, float boundsY, float initX, float initY, float picSizeX, float picSizeY, 
+    String in, String out) {
     switch (type) {
-      case L1SIM:
-        return new L1SimRig(boundsX, boundsY, initX, initY, picSizeX, picSizeY, in, out);
-      default:
-        return null;
+    case L1SIM:
+      return new L1SimRig(boundsX, boundsY, initX, initY, picSizeX, picSizeY, in, out);
+    default:
+      return null;
     }
   }
-  
+
   /**
    * Opens a new real rig.
    *
    * @param directory the directory to save images under
    */
-  public Rig openRealRig(String directory) {
+  public Rig openRealRig(int wid, int hei, String directory) {
     try {
-      return new SerialRig(app, 640, 480, directory);
-    } catch (SerialPortException e) {
+      return new SerialRig(app, wid, hei, directory);
+    } 
+    catch (SerialPortException e) {
       System.err.println("Printer not connected.");
     }
     return null;
@@ -85,13 +87,13 @@ public class RigSys {
    * @param type
    * @return
    */
-  public Rig openDefaultRig(int type, String dir) {
+  public Rig openDefaultRig(int type, int wid, int hei, String dir) {
     switch (type) {
     case SERIAL:
-      return openRealRig(dir);
+      return openRealRig(wid, hei, dir);
     case L1SIM:
     default:
-      return openSimRig(type, app.width, app.height, 110f, 110f, 200f, 200f, "fossil.jpg", dir);
+      return openSimRig(type, wid, hei, 110f, 110f, 200f, 200f, "fossil.jpg", dir);
     }
   }
 
@@ -108,13 +110,16 @@ public class RigSys {
 public interface Rig {
   public void draw();
   public void go();
-  
+
   public void addMove(float x, float y);
-  public void addTakePicture();
+  /**
+   * @param name name of the picture without extension
+   */
+  public void addTakePicture(String name);
   public void addLightSwitch(String id, boolean isOn);
-  
+
   public String[] lights();
-  
+
   public float getPicSizeX();
   public float getPicSizeY();
 }

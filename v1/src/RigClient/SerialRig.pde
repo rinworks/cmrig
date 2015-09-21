@@ -1,95 +1,96 @@
-import processing.video.*;
+import processing.video.*; //<>//
 import cc.arduino.*;
 
 public class SerialRig implements Rig, StepFinishedListener {
   public static final int PIC_MILLIS = 2500;
-  public static final int LIGHT_MILLIS = 800;
+  public static final int LIGHT_MILLIS = 450;
   public static final int FEED_RATE = 3000;
-  
+
   Queue<SerialStep> steps;
   SerialStep step;
-  
+
   // Printer
   SerialPort printerPort;
-  
+
   // Camera
-  int picN = 0;
+  //int picN = 0;
   Capture cam1;
-  
+
   // Lights
   String[] lightIds;
   Arduino ino;
-  
+
   // Saving
   String dir;
-  
+
   public PrinterHelper printerHelper;
-  
+
   public static final String OK = "ok";
   public static final String WAIT = "wait";
   public static final String ERROR = "error";
-   //<>//
-  public SerialRig(PApplet app, //<>//
-      int camWidth, int camHeight, String directory)
-      throws SerialPortException/*, RuntimeException*/ {
-    if(debug)println();
-        
+
+  public SerialRig(PApplet app, 
+    int camWidth, int camHeight, String directory)
+    throws SerialPortException/*, RuntimeException*/ {
+    if (debug)println();
+
     this.steps = new LinkedList<SerialStep>();
     this.step = null;    
     this.dir = directory;
-    
+
     // Printer
-    if(globalConfig.printerType == PrinterType.PRINTRBOT) this.printerHelper = new PrintrBotHelper();
-    else if(globalConfig.printerType == PrinterType.ROSTOCKMAX) this.printerHelper = new RostockMaxHelper();
-    
+    if (globalConfig.printerType == PrinterType.PRINTRBOT) this.printerHelper = new PrintrBotHelper();
+    else if (globalConfig.printerType == PrinterType.ROSTOCKMAX) this.printerHelper = new RostockMaxHelper();
+
     this.printerPort = new SerialPort(globalConfig.printerPort);
     printerPort.openPort();
     printerPort.setParams(globalConfig.printerBaudRate, 8, 1, 0);
-    if(debug)println("Printer connected.");
-    
+    if (debug)println("Printer connected.");
+
     steps.add(new SerialInit(this, printerPort, printerHelper));
-    
+
     // Camera
-    if(cameraExists(globalConfig.mainCamera)) {
+    if (cameraExists(globalConfig.mainCamera)) {
       this.cam1 = new Capture(app, camWidth, camHeight, globalConfig.mainCamera);
-      if(debug)println("Camera connected.");
+      if (debug)println("Camera connected.");
       cam1.start();
     } else {
       this.cam1 = null;
-      if(debug)println("Camera not connected.");
+      if (debug)println("Camera not connected.");
     }
-    
+
     // Lights
     try {
       ino = new Arduino(app, globalConfig.arduinoPort, 57600);
-      for(int i = 0; i < 13; i++) {
+      for (int i = 0; i < 13; i++) {
         ino.pinMode(i, Arduino.OUTPUT);
         ino.digitalWrite(i, Arduino.HIGH);
       }
-      if(debug)println("Arduino connected.");
+      if (debug)println("Arduino connected.");
       lightIds = globalConfig.lights;
-    } catch (Exception e) {
-      ino = null;
-      if(debug)println("Arduino not connected.");
     } 
-    
-    if(debug)println();
+    catch (Exception e) {
+      ino = null;
+      if (debug)println("Arduino not connected.");
+    } 
+
+    if (debug)println();
   }
-  
+
   public boolean gCodeValid() {
     //Queue<SerialStep> temp = new LinkedList<SerialStep>();
-    for(SerialStep s : steps) {
-      if(s instanceof SerialMove) {
+    for (SerialStep s : steps) {
+      if (s instanceof SerialMove) {
         SerialMove move = (SerialMove) s;
-        if(!printerHelper.positionValid(move.getX(), move.getY())) return false;
+        if (!printerHelper.positionValid(move.getX(), move.getY())) return false;
       }
     }
     return true;
   }
-  
+
   public void draw() {
-    if(cam1 != null) {
-      if(cam1.available()) {
+    if (cam1 != null) {
+      if (cam1.available()) {
         cam1.read();
       }
       image(cam1, 0, 0);
@@ -97,28 +98,28 @@ public class SerialRig implements Rig, StepFinishedListener {
       text("No camera connected.", 0, 0);
     }
   }
-  
+
   // Go
   public void go() {
-    if(gCodeValid()) {
-      if(!steps.isEmpty()) {
+    if (gCodeValid()) {
+      if (!steps.isEmpty()) {
         step = steps.remove();
-        if(debug)announce();
+        if (debug)announce();
         step.go();
       }
     }
   }
-  
+
   /**
    * Implementation of the StepFinishedListener method
    */
   public void stepFinished(boolean success) {
-    if(success) {
-      if(debug)println(" finished! ---");
-      if(sound)beep.trigger();
-      if(!steps.isEmpty()) {
+    if (success) {
+      if (debug)println(" finished! ---");
+      if (sound)beep.trigger();
+      if (!steps.isEmpty()) {
         step = steps.remove();
-        if(debug)announce();
+        if (debug)announce();
         step.go();
       } else {
         finish(true);
@@ -127,60 +128,66 @@ public class SerialRig implements Rig, StepFinishedListener {
       finish(false);
     }
   }
-  
+
   /**
    * Finishes the execution.
    */
   public void finish(boolean success) {
-    if(debug)println("\n" + (success ? "Done!" : "Aborted."));
+    if (debug)println("\n" + (success ? "Done!" : "Aborted."));
     try {
-      if(printerPort.isOpened())
+      if (printerPort.isOpened())
         printerPort.closePort();
-      
-      if(debug)println("Printer port closed.");
-    } catch (SerialPortException e) {
+
+      if (debug)println("Printer port closed.");
+    } 
+    catch (SerialPortException e) {
     }
   }
-  
+
   public void announce() {
     print("--- " + step + " ...");
   }
-  
+
   // Step Setup
   public void addMove(float x, float y) {
     steps.add(new SerialMove(this, printerPort, printerHelper, x, y));
     //steps.add(new SerialWait(this, SerialRig.PIC_MILLIS));
   }
-  public void addTakePicture() {
+  public void addTakePicture(String name) {
     // Only take a picture if there's a camera connected
-    if(cam1 != null) {
-      picN++;
+    if (cam1 != null) {
       steps.add(new SerialWait(this, SerialRig.PIC_MILLIS));
-      steps.add(new SerialPicture(this, cam1, picN, dir));
+      steps.add(new SerialPicture(this, cam1, name, dir));
     }
   }
   public void addLightSwitch(String id, boolean isOn) {
     // Only add a light switch if the Arduino has been connected
-    if(ino!=null) steps.add(new SerialLightSwitch(this, ino, Integer.parseInt(id), isOn));
-    steps.add(new SerialWait(this, LIGHT_MILLIS));
+    if (ino != null) {
+      steps.add(new SerialLightSwitch(this, ino, Integer.parseInt(id), isOn));
+      steps.add(new SerialWait(this, LIGHT_MILLIS));
+    }
   }
-  
+
   public String[] lights() {
     return lightIds;
   }
-  
+
   /**
    * @param name the name of the camera
    * @return if the given camera is connected
    */
   public boolean cameraExists(String name) {
     String[] cameras = Capture.list();
-    for(String camera : cameras) {
-      if(camera.contains(name)) return true;
+    for (String camera : cameras) {
+      if (camera.contains(name)) return true;
     }
     return false;
   }
-  
-  public float getPicSizeX() { return RigSys.DINO; }
-  public float getPicSizeY() { return RigSys.DINO; }
+
+  public float getPicSizeX() { 
+    return RigSys.LOL;
+  }
+  public float getPicSizeY() { 
+    return RigSys.LOL;
+  }
 }
