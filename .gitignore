@@ -1,2 +1,3 @@
 /v1/src/RigClient/output/*
 *.db
+/v1/rigserver/bin/
