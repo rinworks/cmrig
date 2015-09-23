@@ -4,6 +4,7 @@ import java.util.Random;
 
 import rigserver.Config.GlobalConfigManager;
 
+// TODO: Static or not??
 /**
  * A utilities class in support of the {@link RigSys} object, providing
  * functionality to setup a rig.
@@ -26,9 +27,11 @@ public class RigUtils {
 	 *            width of the matrix
 	 * @param height
 	 *            height of the matrix
+	 * @param prefix
+	 *            prefix for all the pictures taken
 	 * @return the number of pictures taken
 	 */
-	public static String setupMatrix(Rig r, float x, float y, float width,
+	public String setupMatrix(Rig r, float x, float y, float width,
 			float height, String prefix) {
 		if (r != null) {
 			// # of pictures
@@ -44,7 +47,7 @@ public class RigUtils {
 				for (int i = 0; i < cols; i++) {
 					float picX = x + r.getPicSizeX() / 2f + i * xOffset;
 					r.addMove(picX, picY);
-					r.addTakePicture(prefix + "-"
+					r.addTakePicture(prefix
 							+ String.format("%02d", 1 + j) + "-"
 							+ String.format("%03d", 1 + i));
 
@@ -59,7 +62,7 @@ public class RigUtils {
 	}
 
 	/**
-	 * Sets up a 3D cubical matrix.
+	 * Sets up a 3D cubical matrix. Takes pictures z-layer by z-layer.
 	 * 
 	 * @param r
 	 * @param x
@@ -78,12 +81,12 @@ public class RigUtils {
 	 *            change in z between two layers
 	 * @return
 	 */
-	public static String setupCube(Rig r, float x, float y, float width,
-			float height, float z, float layers, float dZ) {
+	public String setupCube(Rig r, float x, float y, float width, float height,
+			float z, float layers, float dZ) {
 		if (r != null) {
 			for (int i = 0; i < layers; i++) {
 				r.addMove(x, y, z + i * dZ);
-				setupMatrix(r, x, y, width, height, i + "");
+				setupMatrix(r, x, y, width, height, i + "-");
 			}
 		}
 		return "";
@@ -97,14 +100,14 @@ public class RigUtils {
 	 * @throws RuntimeException
 	 *             if the configuration isn't defined
 	 */
-	public static void setupGlobalConfiguration(String configName) {
+	public void setupGlobalConfiguration(String configName) {
 		GlobalConfigManager gcm = new GlobalConfigManager();
 
 		RigSys.GLOBAL_CONFIG = gcm.getConfig(configName);
 		if (RigSys.GLOBAL_CONFIG == null) {
 			throw new RuntimeException("Configuration not found: " + configName);
 		}
-		System.out.println("Config \"" + RigSys.GLOBAL_CONFIG + "\":\n"
+		Logger.logln("Config \"" + RigSys.GLOBAL_CONFIG + "\":\n"
 				+ configName);
 	}
 
@@ -116,7 +119,7 @@ public class RigUtils {
 	 * @param on
 	 *            true for on, false for off
 	 */
-	public static void allLights(Rig r, boolean on) {
+	public void allLights(Rig r, boolean on) {
 		if (r != null && r.lights() != null) {
 			for (String id : r.lights()) {
 				r.addLightSwitch(id, on);
@@ -124,7 +127,7 @@ public class RigUtils {
 		}
 	}
 
-	public static void setupMatrix(Rig rig, int i, int wid, int hei, int l) {
+	public void setupMatrix(Rig rig, int i, int wid, int hei, int l) {
 		setupMatrix(rig, i, wid, hei, l, "");
 	}
 }

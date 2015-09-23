@@ -2,30 +2,27 @@ import processing.core.PApplet;
 import rigserver.*;
 import rigserver.SerialRig.*;
 
+@SuppressWarnings("serial")
 public class RigClient extends PApplet {
-	/**
-	 * ??!!
-	 */
-	private static final long serialVersionUID = 1L;
-
 	RigSys sys;
 	Rig rig;
 
 	public void setup() {
-		size(640, 480);
+		size(1280, 960);
 
 		sys = new RigSys(this);
-		RigUtils.setupGlobalConfiguration("RostockMakerFaireSJ");
-		
-		rig = sys.openDefaultRig(RigSys.SERIAL, width, height,
-				"makerfaire-demo");
-		float val = (float) ((RostockMaxHelper.BED_RADIUS) / Math.sqrt(2.0));
-		float startX = -20f, startY = -20f, wid = 40f, hei = 40f;
-		RigUtils.allLights(rig, false);
+		sys.utils().setupGlobalConfiguration("RostockMakerFaireSJ");
 
+		rig = sys.openDefaultRig(RigSys.SERIAL, width, height,
+				"micromakerfaire");
+		
+		//sys.utils().allLights(rig, true);
+		sys.utils().setupMatrix(rig, -30, -30, 60, 60);
+		
 		rig.addMove(20, 20);
-		rig.addMove(25, 25);
-		rig.addTakePicture("superdistinctivenamelol");
+		
+		//sys.utils().setupCube(rig, -30, -25, 10, 10, RostockMaxHelper.Z_INIT, 10, RostockMaxHelper.Z_DIFF);
+		// rig.addMove(20, 20, RostockMaxHelper.Z_INIT - 10);
 
 		if (rig != null)
 			rig.go();

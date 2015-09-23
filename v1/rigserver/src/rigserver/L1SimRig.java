@@ -119,7 +119,7 @@ public class L1SimRig implements Rig {
 			curr.init();
 			paused = false;
 			if (RigSys.DEBUG)
-				System.out.println("Go!");
+				Logger.logln("Go!");
 		}
 	}
 
@@ -130,7 +130,7 @@ public class L1SimRig implements Rig {
 				if (curr.isFinished()) {
 					curr.finish();
 					if (RigSys.DEBUG)
-						System.out.println(curr.finishMessage());
+						Logger.logln(curr.finishMessage());
 					curr = steps.remove();
 					pastSteps.add(curr);
 					curr.init();
@@ -139,7 +139,7 @@ public class L1SimRig implements Rig {
 				}
 			} catch (NoSuchElementException e) {
 				if (RigSys.DEBUG)
-					System.out.println("Done.");
+					Logger.logln("Done.");
 				paused = true;
 			}
 		}

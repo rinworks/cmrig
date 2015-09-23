@@ -1,3 +1,4 @@
 /v1/src/RigClient/output/*
+/v1/src/RigServerClient/output/*
 *.db
 /v1/rigserver/bin/

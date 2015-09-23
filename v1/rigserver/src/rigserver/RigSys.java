@@ -26,17 +26,24 @@ public class RigSys {
 	public static GlobalConfigData GLOBAL_CONFIG;
 	
 	private PApplet app;
+	private RigUtils utils;
 
 	/**
 	 * Creates a new Rig system.
 	 */
 	public RigSys(PApplet app) {
 		this.app = app;
+		this.utils = new RigUtils();
+		Logger.setupConsole();
 
 		// Logging
 		// Logger.setup(Logger.CONSOLE);
 	}
 
+	public RigUtils utils() {
+		return utils;
+	}
+	
 	/**
 	 * Opens a new simulated rig.
 	 *

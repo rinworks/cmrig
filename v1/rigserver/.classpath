@@ -4,10 +4,10 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
 	<classpathentry kind="lib" path="lib/Arduino.jar"/>
 	<classpathentry kind="lib" path="lib/core.jar"/>
-	<classpathentry kind="lib" path="lib/gstreamer-java.jar"/>
-	<classpathentry kind="lib" path="lib/jna.jar"/>
 	<classpathentry kind="lib" path="lib/jssc.jar"/>
 	<classpathentry kind="lib" path="lib/serial.jar"/>
-	<classpathentry kind="lib" path="lib/video.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Sarang/Documents/Processing-3/libraries/video/library/gstreamer-java.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Sarang/Documents/Processing-3/libraries/video/library/jna.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Sarang/Documents/Processing-3/libraries/video/library/video.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

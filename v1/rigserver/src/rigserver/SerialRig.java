@@ -50,7 +50,7 @@ public class SerialRig implements Rig, StepFinishedListener {
 			throws SerialPortException/* , RuntimeException */{
 		this.app = app;
 		if (RigSys.DEBUG)
-			System.out.println();
+			Logger.logln();
 
 		this.steps = new LinkedList<Step>();
 		this.step = null;
@@ -66,7 +66,7 @@ public class SerialRig implements Rig, StepFinishedListener {
 		printerPort.openPort();
 		printerPort.setParams(RigSys.GLOBAL_CONFIG.printerBaudRate, 8, 1, 0);
 		if (RigSys.DEBUG)
-			System.out.println("Printer connected.");
+			Logger.logln("Printer connected.");
 
 		// Always initialize
 		steps.add(GCodeStep.init(this, printerPort, printerHelper));
@@ -76,12 +76,12 @@ public class SerialRig implements Rig, StepFinishedListener {
 			this.cam1 = new Capture(app, camWidth, camHeight,
 					RigSys.GLOBAL_CONFIG.mainCamera);
 			if (RigSys.DEBUG)
-				System.out.println("Camera connected.");
+				Logger.logln("Camera connected.");
 			cam1.start();
 		} else {
 			this.cam1 = null;
 			if (RigSys.DEBUG)
-				System.out.println("Camera not connected.");
+				Logger.logln("Camera not connected.");
 		}
 
 		// Lights
@@ -92,16 +92,16 @@ public class SerialRig implements Rig, StepFinishedListener {
 				ino.digitalWrite(i, Arduino.HIGH);
 			}
 			if (RigSys.DEBUG)
-				System.out.println("Arduino connected.");
+				Logger.logln("Arduino connected.");
 			lightIds = RigSys.GLOBAL_CONFIG.lights;
 		} catch (Exception e) {
 			ino = null;
 			if (RigSys.DEBUG)
-				System.out.println("Arduino not connected.");
+				Logger.logln("Arduino not connected.");
 		}
 
 		if (RigSys.DEBUG)
-			System.out.println();
+			Logger.logln();
 	}
 
 	/**
@@ -160,7 +160,7 @@ public class SerialRig implements Rig, StepFinishedListener {
 	public void stepFinished(boolean success) {
 		if (success) {
 			if (RigSys.DEBUG)
-				System.out.println(" finished! ---");
+				Logger.logln(" finished! ---");
 			if (!steps.isEmpty()) {
 				step = steps.remove();
 				if (RigSys.DEBUG)
@@ -179,18 +179,18 @@ public class SerialRig implements Rig, StepFinishedListener {
 	 */
 	public void finish(boolean success) {
 		if (RigSys.DEBUG)
-			System.out.println(success ? "Done!" : "Aborted.");
+			Logger.logln(success ? "Done!" : "Aborted.");
 		try {
 			if (printerPort.isOpened())
 				printerPort.closePort();
 			if (RigSys.DEBUG)
-				System.out.println("Printer port closed.");
+				Logger.logln("Printer port closed.");
 		} catch (SerialPortException e) {
 		}
 	}
 
 	public void announce() {
-		System.out.print("--- " + step.toString() + " ...");
+		Logger.log("--- " + step.toString() + " ...");
 	}
 
 	// Step Setup
@@ -407,7 +407,7 @@ public class SerialRig implements Rig, StepFinishedListener {
 		private void sendGCode() throws SerialPortException {
 			port.writeString(code[lineN]);
 			if (RigSys.DEEP_DEBUG)
-				System.out.print("SENT: " + code[lineN]);
+				Logger.log("SENT: " + code[lineN]);
 		}
 
 		public void go() {
@@ -436,7 +436,7 @@ public class SerialRig implements Rig, StepFinishedListener {
 					// sends 'o' and 'k' separately for some reason
 					rxString += in;
 					if (RigSys.DEEP_DEBUG)
-						System.out.print("RECD: " + in);
+						Logger.log("RECD: " + in);
 
 					// Only handle the response if it's a complete response
 					if (rxString.endsWith(GCodeHelper.LINE_BREAK)) {
@@ -567,7 +567,7 @@ public class SerialRig implements Rig, StepFinishedListener {
 				video.read();
 			video.save("output/" + dir + "/" + picN + ".jpg");
 			if (RigSys.DEEP_DEBUG)
-				System.out.println("Picture " + picN + " saved.");
+				Logger.logln("Picture " + picN + " saved.");
 			l.stepFinished(true);
 		}
 
@@ -593,7 +593,7 @@ public class SerialRig implements Rig, StepFinishedListener {
 			// On corresponds to LOW
 			ino.digitalWrite(pin, (isOn ? Arduino.LOW : Arduino.HIGH));
 			if (RigSys.DEEP_DEBUG)
-				System.out.println("Light " + pin + " turned o"
+				Logger.logln("Light " + pin + " turned o"
 						+ (isOn ? "n." : "ff."));
 			l.stepFinished(true);
 		}
