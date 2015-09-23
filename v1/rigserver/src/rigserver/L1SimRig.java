@@ -153,6 +153,14 @@ public class L1SimRig implements Rig {
 		steps.add(new Move(x + MARGIN, y + MARGIN, this));
 	}
 
+	/**
+	 * There is no "z", so this just calls the {@link addMove} method with only
+	 * x and y parameters.
+	 */
+	public void addMove(float x, float y, float z) {
+		this.addMove(x, y);
+	}
+	
 	public void addTakePicture(String name) {
 		steps.add(new Picture(FPS, name, this));
 		picN++;

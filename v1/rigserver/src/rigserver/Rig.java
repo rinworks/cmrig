@@ -6,6 +6,8 @@ public interface Rig {
 	public void go();
 
 	public void addMove(float x, float y);
+	
+	public void addMove(float x, float y, float z);
 
 	/**
 	 * @param name name of the picture without extension

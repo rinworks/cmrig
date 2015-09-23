@@ -45,7 +45,7 @@ public class Config {
 			String ret = "{pp:" + printerPort + ", ap:" + arduinoPort
 					+ ", pbr:" + printerBaudRate;
 			ret += "\npt:" + printerType + ", mc:\"" + mainCamera + "\", sc:\""
-					+ secondaryCamera;
+					+ secondaryCamera + "\"";
 			ret += "\nl:" + Arrays.toString(lights) + "\"}";
 			return ret;
 		}
@@ -74,9 +74,7 @@ public class Config {
 
 		public String[] list() {
 			List<String> temp = new ArrayList<String>();
-			for (String k : configs.keySet()) {// Enumeration<String> k =
-												// configs.keys();
-												// k.hasMoreElements();) {
+			for (String k : configs.keySet()) {
 				temp.add(configs.get(k).toString());
 			}
 			return temp.toArray(new String[temp.size()]);

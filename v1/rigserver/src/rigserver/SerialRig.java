@@ -104,12 +104,22 @@ public class SerialRig implements Rig, StepFinishedListener {
 			System.out.println();
 	}
 
-	public boolean gCodeValid() {
+	/**
+	 * Checks if the current sequence of moves is valid, i.e. within the
+	 * printer's safe bounds.
+	 * 
+	 * @return validity
+	 */
+	public boolean movesValid() {
 		// Queue<SerialStep> temp = new LinkedList<SerialStep>();
 		for (Step s : steps) {
 			if (s instanceof Move) {
 				Move move = (Move) s;
 				if (!printerHelper.positionValid(move.getX(), move.getY()))
+					return false;
+			} else if (s instanceof Move3D) {
+				Move3D move = (Move3D) s;
+				if (!printerHelper.positionValid(move.getX(), move.getY(), move.getZ()))
 					return false;
 			}
 		}
@@ -133,7 +143,7 @@ public class SerialRig implements Rig, StepFinishedListener {
 	 */
 	@Override
 	public void go() {
-		if (gCodeValid()) {
+		if (movesValid()) {
 			if (!steps.isEmpty()) {
 				step = steps.remove();
 				if (RigSys.DEBUG)
@@ -190,6 +200,11 @@ public class SerialRig implements Rig, StepFinishedListener {
 		steps.add(new Wait(this, SerialRig.MOVE_MILLIS));
 	}
 
+	public void addMove(float x, float y, float z) {
+		steps.add(new Move3D(this, printerPort, printerHelper, x, y, z));
+		steps.add(new Wait(this, SerialRig.MOVE_MILLIS));
+	}
+
 	@Override
 	public void addTakePicture(String name) {
 		// Only take a picture if there's a camera connected
@@ -238,6 +253,8 @@ public class SerialRig implements Rig, StepFinishedListener {
 	public interface PrinterHelper {
 		public String initialize();
 
+		public boolean positionValid(float x, float y, float z);
+
 		public String waitForFinish();
 
 		public boolean positionValid(float x, float y);
@@ -249,21 +266,28 @@ public class SerialRig implements Rig, StepFinishedListener {
 		public static final float X_BOUND = 152.4f;
 		public static final float Y_BOUND = 152.4f;
 
+		public static final float Z_LOW = 50f;
+		public static final float Z_HIGH = 70f;
+		
+		@Override
 		public String initialize() {
 			return "G28 X Y\nG0 F" + SerialRig.FEED_RATE + "\n";
 		}
 
 		// TODO: Is this really necessary?
+		@Override
 		public String waitForFinish() {
 			return "G4 P0\n";
 		}
 
+		@Override
 		public boolean positionValid(float x, float y) {
 			boolean xOkay = x >= 0 && x <= X_BOUND;
 			boolean yOkay = y >= 0 && y <= Y_BOUND;
 			return xOkay && yOkay;
 		}
 
+		@Override
 		public SerialResponse handleRx(String rxString) {
 			if (rxString.contains(SerialRig.OK)) { // line completed
 				return SerialResponse.SUCCESS;
@@ -271,25 +295,38 @@ public class SerialRig implements Rig, StepFinishedListener {
 				return SerialResponse.FAIL;
 			}
 		}
+
+		/**
+		 * Not too precise because of PrintrBot's unfortunate lack of Z calibration.
+		 * TODO: fix?
+		 */
+		@Override
+		public boolean positionValid(float x, float y, float z) {
+			return positionValid(x, y) && (z >= Z_LOW && z <= Z_HIGH);
+		}
 	}
 
 	public static class RostockMaxHelper implements PrinterHelper {
 		public static final float Z_FERN = 171.61f;
 		public static final float Z_FOSSIL = 290f;
 		public static final float Z_SAFE = 344.61f; // 50 off from home
+		public static final float Z_FLOWER = 202.61f;
 
 		public static final float Z_HOME = 394.61f;
+		public static final float Z_LOW = 180f;
 		public static final float Z_INIT = Z_SAFE;
+		
+		public static final float Z_DIFF = 2f;
 
 		public static final float BED_RADIUS = 120f;
 		public static final float BUFFER = 10f;
 
 		public String initialize() {
 			String home = "G28 X0 Y0 Z0\n";
-			String setFeedRate = "G0 F" + SerialRig.FEED_RATE + "\n";
+			//String setFeedRate = "G0 F" + SerialRig.FEED_RATE + "\n";
 			String setZ = GCodeHelper.ABS_MOVEMENT + GCodeHelper.MOVE_PREFIX
 					+ " Z" + Z_INIT;
-			return home + setFeedRate + setZ;
+			return home + /*setFeedRate +*/ setZ;
 		}
 
 		public String waitForFinish() {
@@ -309,6 +346,11 @@ public class SerialRig implements Rig, StepFinishedListener {
 			} else {
 				return SerialResponse.WAIT;
 			}
+		}
+
+		@Override
+		public boolean positionValid(float x, float y, float z) {
+			return positionValid(x, y) && (z >= Z_LOW && z <= Z_HOME);
 		}
 	}
 
@@ -460,7 +502,7 @@ public class SerialRig implements Rig, StepFinishedListener {
 			this.x = x;
 			this.y = y;
 
-			setGCode(GCodeHelper.getMoveGCode(x, y) + help.waitForFinish());
+			this.setGCode(GCodeHelper.getMoveGCode(x, y) + help.waitForFinish());
 		}
 
 		public float getX() {
@@ -473,6 +515,37 @@ public class SerialRig implements Rig, StepFinishedListener {
 
 		public String toString() {
 			return "Move to X:" + x + ", Y:" + y;
+		}
+	}
+
+	static class Move3D extends GCodeStep {
+		private float x, y, z;
+
+		public Move3D(StepFinishedListener l, SerialPort port,
+				PrinterHelper help, float x, float y, float z) {
+			super(l, port, help);
+			this.x = x;
+			this.y = y;
+			this.z = z;
+
+			this.setGCode(GCodeHelper.getMove3DGCode(x, y, z)
+					+ help.waitForFinish());
+		}
+
+		public float getX() {
+			return x;
+		}
+
+		public float getY() {
+			return y;
+		}
+
+		public float getZ() {
+			return z;
+		}
+
+		public String toString() {
+			return "Move to X:" + x + ", Y:" + y + ", Z:" + z;
 		}
 	}
 

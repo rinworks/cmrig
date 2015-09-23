@@ -17,7 +17,7 @@ public class RigSys {
 	public static final float SUPEREYES_PIC_SIZE_X = 12.5f;
 	public static final float SUPEREYES_PIC_SIZE_Y = 9f;
 
-	public static final float DINO = 2.3f;
+	public static final float DINO = 5f;
 	public static final float LOL = 10f;
 
 	public static final boolean DEBUG = true;

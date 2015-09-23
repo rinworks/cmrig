@@ -43,4 +43,11 @@ public class GCodeHelper {
 	public static String getWaitGCode(int mil) {
 		return WAIT_PREFIX + " P" + mil + "\n";
 	}
+
+	public static String getMove3DGCode(float x, float y, float z) {
+		String xS = String.format("%.2f", x);
+		String yS = String.format("%.2f", y);
+		String zS = String.format("%.2f", z);
+		return ABS_MOVEMENT + MOVE_PREFIX + " X" + xS + " Y" + yS + " Z" + zS + "\n";
+	}
 }
