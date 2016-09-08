@@ -1,3 +1,7 @@
+// Project: CMRig - Rostock effectro platform adaptor for Dino lite microscope
+// History: Y16M09D08 JMJ Created 1st version
+
+
 //washer(15, 25, 5);
 //pipeSegment(id1=15, id2=20, od1=20, od2=25, h=10);
 //radialCylinders(cd=25, pd=3, h=5, angles=[0, 45,90, 180]);
