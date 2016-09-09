@@ -1,5 +1,16 @@
 // Project: CMRig - Rostock effectro platform adaptor for Dino lite microscope
 // History: Y16M09D08 JMJ Created 1st version
+// TODO: 
+// 1. Sloping wall:
+//      - Move to center.
+//      - Add slot for nut
+//      - Potentiall add hole for 2nd nut on top (after extending height)
+// 
+// 3. Consider reducing thickness to 2.5;
+// 4. VBar: add flange for rubber band
+// PRINTING INSTRUCTIONS:
+//      - bump density to 40%
+//      - add supports (for hole)
 
 
 //washer(15, 25, 5);
