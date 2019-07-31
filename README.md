@@ -2,6 +2,8 @@
 
 Software system for Rinworks' Computerized Microscopic (CM) Imaging Rig. Built by Sarang Joshi and Joseph Joy.
 
+Link to documentation: http://rinworks.github.io/cmrig/ [UNDER CONSTRUCTION]
+
 ## Overview
 
 The `rigserver` package provides basic objects and functions that make controlling a CM Rig easy, using the familiar [Processing IDE](http://processing.org). The library provides the following objects:
